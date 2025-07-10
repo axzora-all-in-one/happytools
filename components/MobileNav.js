@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Menu, X, Home, Bot, Grid3X3, Heart, Sparkles, TrendingUp } from 'lucide-react'
+import { Menu, X, Home, Bot, Grid3X3, Heart, Sparkles, TrendingUp, Layout, MessageSquare } from 'lucide-react'
 
 export default function MobileNav() {
   const [isOpen, setIsOpen] = useState(false)
@@ -10,7 +10,8 @@ export default function MobileNav() {
   const navItems = [
     { href: '/', label: 'Home', icon: Home, description: 'Discover AI Tools' },
     { href: '/agents', label: 'AI Agents', icon: Bot, description: 'Professional AI Agents' },
-    { href: '/chatbot-builder', label: 'Chatbot Builder', icon: Grid3X3, description: 'Build Custom Chatbots' }
+    { href: '/chatbot-builder', label: 'Chatbot Builder', icon: MessageSquare, description: 'Build Custom Chatbots' },
+    { href: '/website-builder', label: 'Website Builder', icon: Layout, description: 'AI Website Generator' }
   ]
 
   const quickActions = [
