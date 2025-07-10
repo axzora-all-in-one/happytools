@@ -338,6 +338,222 @@ async function handleRoute(request, { params }) {
       }));
     }
 
+    // Chatbot creation endpoint - POST /api/chatbot/create
+    if (route === '/chatbot/create' && method === 'POST') {
+      try {
+        const body = await request.json()
+        const { name, description, personality, knowledge } = body
+        
+        if (!name || !knowledge) {
+          return handleCORS(NextResponse.json(
+            { error: 'Name and knowledge base are required' },
+            { status: 400 }
+          ))
+        }
+        
+        // Process knowledge base
+        let knowledgeText = knowledge.textContent || ''
+        
+        // Add document content
+        if (knowledge.documents && knowledge.documents.length > 0) {
+          knowledge.documents.forEach(doc => {
+            knowledgeText += `\n\n--- ${doc.name} ---\n${doc.content}`
+          })
+        }
+        
+        // Process URLs (simulated for now)
+        if (knowledge.urls && knowledge.urls.length > 0) {
+          const validUrls = knowledge.urls.filter(url => url.trim())
+          validUrls.forEach(url => {
+            knowledgeText += `\n\n--- Content from ${url} ---\nThis URL will be processed to extract content for the chatbot knowledge base.`
+          })
+        }
+        
+        // Create chatbot record
+        const chatbot = {
+          id: uuidv4(),
+          name: name,
+          description: description || '',
+          personality: personality || 'helpful',
+          knowledge_base: knowledgeText,
+          knowledge_sources: {
+            documents: knowledge.documents?.map(doc => ({ name: doc.name, type: doc.type })) || [],
+            urls: knowledge.urls?.filter(url => url.trim()) || [],
+            text_content: !!knowledge.textContent
+          },
+          status: 'active',
+          created_at: new Date(),
+          updated_at: new Date(),
+          chat_count: 0,
+          embedding_active: true
+        }
+        
+        // Save to database
+        await db.collection('chatbots').insertOne(chatbot)
+        
+        // Create system prompt based on personality
+        const personalityPrompts = {
+          helpful: 'You are a helpful and informative assistant.',
+          friendly: 'You are a friendly and approachable assistant.',
+          expert: 'You are a knowledgeable expert in your field.',
+          creative: 'You are a creative and imaginative assistant.',
+          formal: 'You are a professional and formal assistant.'
+        }
+        
+        const systemPrompt = personalityPrompts[personality] || personalityPrompts.helpful
+        
+        // Update chatbot with system prompt
+        await db.collection('chatbots').updateOne(
+          { id: chatbot.id },
+          { $set: { system_prompt: systemPrompt } }
+        )
+        
+        return handleCORS(NextResponse.json({
+          success: true,
+          id: chatbot.id,
+          name: chatbot.name,
+          status: chatbot.status,
+          knowledge_stats: {
+            total_content_length: knowledgeText.length,
+            documents: knowledge.documents?.length || 0,
+            urls: knowledge.urls?.filter(url => url.trim()).length || 0,
+            has_text_content: !!knowledge.textContent
+          }
+        }))
+        
+      } catch (error) {
+        console.error('Error creating chatbot:', error)
+        return handleCORS(NextResponse.json(
+          { error: 'Failed to create chatbot' },
+          { status: 500 }
+        ))
+      }
+    }
+
+    // Chatbot chat endpoint - POST /api/chatbot/chat
+    if (route === '/chatbot/chat' && method === 'POST') {
+      try {
+        const body = await request.json()
+        const { chatbotId, message, sessionId } = body
+        
+        if (!chatbotId || !message) {
+          return handleCORS(NextResponse.json(
+            { error: 'Chatbot ID and message are required' },
+            { status: 400 }
+          ))
+        }
+        
+        // Get chatbot from database
+        const chatbot = await db.collection('chatbots').findOne({ id: chatbotId })
+        
+        if (!chatbot) {
+          return handleCORS(NextResponse.json(
+            { error: 'Chatbot not found' },
+            { status: 404 }
+          ))
+        }
+        
+        // Generate response based on knowledge base (simplified)
+        let response = ''
+        
+        if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
+          response = `Hello! I'm ${chatbot.name}. ${chatbot.description} How can I help you today?`
+        } else if (message.toLowerCase().includes('help') || message.toLowerCase().includes('what')) {
+          response = `I'm here to help! I have knowledge about various topics from my training data. You can ask me questions and I'll do my best to provide helpful answers based on my knowledge base.`
+        } else {
+          // Simple keyword matching from knowledge base
+          const knowledgeBase = chatbot.knowledge_base.toLowerCase()
+          const messageWords = message.toLowerCase().split(' ')
+          
+          let relevantContent = ''
+          for (const word of messageWords) {
+            if (word.length > 3 && knowledgeBase.includes(word)) {
+              const index = knowledgeBase.indexOf(word)
+              const contextStart = Math.max(0, index - 100)
+              const contextEnd = Math.min(knowledgeBase.length, index + 200)
+              relevantContent = knowledgeBase.substring(contextStart, contextEnd)
+              break
+            }
+          }
+          
+          if (relevantContent) {
+            response = `Based on my knowledge: ${relevantContent.substring(0, 300)}...`
+          } else {
+            response = `I understand you're asking about "${message}". While I don't have specific information about that in my current knowledge base, I'm designed to help with questions related to ${chatbot.name}. Could you try rephrasing your question or ask about something more specific?`
+          }
+        }
+        
+        // Save chat interaction
+        const chatInteraction = {
+          id: uuidv4(),
+          chatbot_id: chatbotId,
+          session_id: sessionId || uuidv4(),
+          user_message: message,
+          bot_response: response,
+          timestamp: new Date()
+        }
+        
+        await db.collection('chat_interactions').insertOne(chatInteraction)
+        
+        // Update chat count
+        await db.collection('chatbots').updateOne(
+          { id: chatbotId },
+          { $inc: { chat_count: 1 } }
+        )
+        
+        return handleCORS(NextResponse.json({
+          success: true,
+          response: response,
+          session_id: chatInteraction.session_id,
+          timestamp: chatInteraction.timestamp
+        }))
+        
+      } catch (error) {
+        console.error('Error processing chat:', error)
+        return handleCORS(NextResponse.json(
+          { error: 'Failed to process chat message' },
+          { status: 500 }
+        ))
+      }
+    }
+
+    // Get chatbot info - GET /api/chatbot/info
+    if (route.startsWith('/chatbot/info/') && method === 'GET') {
+      try {
+        const chatbotId = route.split('/').pop()
+        
+        const chatbot = await db.collection('chatbots').findOne({ id: chatbotId })
+        
+        if (!chatbot) {
+          return handleCORS(NextResponse.json(
+            { error: 'Chatbot not found' },
+            { status: 404 }
+          ))
+        }
+        
+        const { _id, knowledge_base, ...publicChatbot } = chatbot
+        
+        return handleCORS(NextResponse.json({
+          success: true,
+          chatbot: {
+            ...publicChatbot,
+            knowledge_stats: {
+              content_length: knowledge_base?.length || 0,
+              document_count: chatbot.knowledge_sources?.documents?.length || 0,
+              url_count: chatbot.knowledge_sources?.urls?.length || 0
+            }
+          }
+        }))
+        
+      } catch (error) {
+        console.error('Error getting chatbot info:', error)
+        return handleCORS(NextResponse.json(
+          { error: 'Failed to get chatbot info' },
+          { status: 500 }
+        ))
+      }
+    }
+
     // AI Agents run endpoint - POST /api/agents/run
     if (route === '/agents/run' && method === 'POST') {
       try {
