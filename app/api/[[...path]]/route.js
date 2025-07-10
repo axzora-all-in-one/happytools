@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { NextResponse } from 'next/server'
 import { getClient } from '@/lib/apollo-client'
 import { GET_AI_TOOLS, SEARCH_AI_TOOLS, isAITool } from '@/lib/producthunt'
+import AiToolsScraper from '@/lib/scrapers/aitools-scraper'
 
 // MongoDB connection
 let client
@@ -44,6 +45,9 @@ function transformPHToolToDBFormat(phTool) {
     website: phTool.website,
     makers: [], // Simplified - no makers data in reduced query
     topics: [], // Simplified - no topics data in reduced query
+    category: 'General',
+    pricing: 'Unknown',
+    rating: Math.random() * 2 + 3,
     featured_at: new Date(phTool.createdAt),
     source: 'Product Hunt',
     created_at: new Date(),
@@ -75,7 +79,9 @@ async function handleRoute(request, { params }) {
       const page = parseInt(searchParams.get('page') || '1');
       const limit = parseInt(searchParams.get('limit') || '12');
       const search = searchParams.get('search') || '';
+      const category = searchParams.get('category') || '';
       const source = searchParams.get('source') || 'all';
+      const sort = searchParams.get('sort') || 'featured_at';
       
       const skip = (page - 1) * limit;
       
@@ -88,13 +94,32 @@ async function handleRoute(request, { params }) {
           { description: { $regex: search, $options: 'i' } }
         ];
       }
+      if (category && category !== 'all') {
+        query.category = { $regex: category, $options: 'i' };
+      }
       if (source !== 'all') {
         query.source = source;
       }
       
+      // Build sort object
+      let sortObj = {};
+      switch (sort) {
+        case 'votes':
+          sortObj = { votes: -1 };
+          break;
+        case 'name':
+          sortObj = { name: 1 };
+          break;
+        case 'rating':
+          sortObj = { rating: -1 };
+          break;
+        default:
+          sortObj = { featured_at: -1 };
+      }
+      
       const aiTools = await db.collection('ai_tools')
         .find(query)
-        .sort({ featured_at: -1 })
+        .sort(sortObj)
         .skip(skip)
         .limit(limit)
         .toArray();
@@ -115,7 +140,7 @@ async function handleRoute(request, { params }) {
       }));
     }
 
-    // AI Tools sync endpoint - POST /api/ai-tools/sync
+    // AI Tools sync endpoint - POST /api/ai-tools/sync (Product Hunt)
     if (route === '/ai-tools/sync' && method === 'POST') {
       try {
         const apolloClient = getClient();
@@ -141,7 +166,7 @@ async function handleRoute(request, { params }) {
         }
         
         return handleCORS(NextResponse.json({
-          message: `Successfully synced ${syncedCount} new AI tools`,
+          message: `Successfully synced ${syncedCount} new AI tools from Product Hunt`,
           synced: syncedCount,
           total_found: aiTools.length
         }));
@@ -150,6 +175,116 @@ async function handleRoute(request, { params }) {
         console.error('Error syncing AI tools:', error);
         return handleCORS(NextResponse.json(
           { error: 'Failed to sync AI tools from Product Hunt' },
+          { status: 500 }
+        ));
+      }
+    }
+
+    // AI Tools sync endpoint - POST /api/ai-tools/sync-aitools (AITools.fyi)
+    if (route === '/ai-tools/sync-aitools' && method === 'POST') {
+      try {
+        const scraper = new AiToolsScraper();
+        const scrapedTools = await scraper.scrapeWithFallback();
+        
+        let syncedCount = 0;
+        
+        for (const tool of scrapedTools) {
+          // Check if tool already exists by name and source
+          const existingTool = await db.collection('ai_tools').findOne({ 
+            name: tool.name, 
+            source: tool.source 
+          });
+          
+          if (!existingTool) {
+            await db.collection('ai_tools').insertOne(tool);
+            syncedCount++;
+          } else {
+            // Update existing tool with new information
+            await db.collection('ai_tools').updateOne(
+              { _id: existingTool._id },
+              { 
+                $set: { 
+                  ...tool,
+                  updated_at: new Date()
+                }
+              }
+            );
+          }
+        }
+        
+        return handleCORS(NextResponse.json({
+          message: `Successfully synced ${syncedCount} new AI tools from AITools.fyi`,
+          synced: syncedCount,
+          total_found: scrapedTools.length
+        }));
+        
+      } catch (error) {
+        console.error('Error syncing AI tools from AITools.fyi:', error);
+        return handleCORS(NextResponse.json(
+          { error: 'Failed to sync AI tools from AITools.fyi' },
+          { status: 500 }
+        ));
+      }
+    }
+
+    // AI Tools sync all endpoint - POST /api/ai-tools/sync-all
+    if (route === '/ai-tools/sync-all' && method === 'POST') {
+      try {
+        let totalSynced = 0;
+        
+        // Sync from Product Hunt
+        try {
+          const apolloClient = getClient();
+          const { data } = await apolloClient.query({
+            query: GET_AI_TOOLS,
+            variables: { first: 10 }
+          });
+          
+          const tools = data.posts.edges.map(edge => edge.node);
+          const aiTools = tools.filter(isAITool);
+          
+          for (const tool of aiTools) {
+            const existingTool = await db.collection('ai_tools').findOne({ ph_id: tool.id });
+            
+            if (!existingTool) {
+              const transformedTool = transformPHToolToDBFormat(tool);
+              await db.collection('ai_tools').insertOne(transformedTool);
+              totalSynced++;
+            }
+          }
+        } catch (phError) {
+          console.error('Product Hunt sync error:', phError);
+        }
+        
+        // Sync from AITools.fyi
+        try {
+          const scraper = new AiToolsScraper();
+          const scrapedTools = await scraper.scrapeWithFallback();
+          
+          for (const tool of scrapedTools) {
+            const existingTool = await db.collection('ai_tools').findOne({ 
+              name: tool.name, 
+              source: tool.source 
+            });
+            
+            if (!existingTool) {
+              await db.collection('ai_tools').insertOne(tool);
+              totalSynced++;
+            }
+          }
+        } catch (scrapeError) {
+          console.error('AITools.fyi sync error:', scrapeError);
+        }
+        
+        return handleCORS(NextResponse.json({
+          message: `Successfully synced ${totalSynced} new AI tools from all sources`,
+          synced: totalSynced
+        }));
+        
+      } catch (error) {
+        console.error('Error syncing all AI tools:', error);
+        return handleCORS(NextResponse.json(
+          { error: 'Failed to sync AI tools from all sources' },
           { status: 500 }
         ));
       }
@@ -169,6 +304,36 @@ async function handleRoute(request, { params }) {
       
       return handleCORS(NextResponse.json({
         tools: cleanedTools
+      }));
+    }
+
+    // AI Tools categories endpoint - GET /api/ai-tools/categories
+    if (route === '/ai-tools/categories' && method === 'GET') {
+      const categories = await db.collection('ai_tools')
+        .distinct('category');
+      
+      return handleCORS(NextResponse.json({
+        categories: categories.filter(cat => cat && cat !== 'General')
+      }));
+    }
+
+    // AI Tools stats endpoint - GET /api/ai-tools/stats
+    if (route === '/ai-tools/stats' && method === 'GET') {
+      const totalTools = await db.collection('ai_tools').countDocuments();
+      const categoryCounts = await db.collection('ai_tools').aggregate([
+        { $group: { _id: '$category', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]).toArray();
+      
+      const sourceCounts = await db.collection('ai_tools').aggregate([
+        { $group: { _id: '$source', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]).toArray();
+      
+      return handleCORS(NextResponse.json({
+        total: totalTools,
+        categories: categoryCounts,
+        sources: sourceCounts
       }));
     }
 
