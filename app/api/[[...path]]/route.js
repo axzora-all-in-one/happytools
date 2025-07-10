@@ -1,6 +1,8 @@
 import { MongoClient } from 'mongodb'
 import { v4 as uuidv4 } from 'uuid'
 import { NextResponse } from 'next/server'
+import { getClient } from '@/lib/apollo-client'
+import { GET_AI_TOOLS, SEARCH_AI_TOOLS, isAITool } from '@/lib/producthunt'
 
 // MongoDB connection
 let client
@@ -29,6 +31,31 @@ export async function OPTIONS() {
   return handleCORS(new NextResponse(null, { status: 200 }))
 }
 
+// Helper function to transform Product Hunt data to our format
+function transformPHToolToDBFormat(phTool) {
+  return {
+    id: uuidv4(),
+    ph_id: phTool.id,
+    name: phTool.name,
+    tagline: phTool.tagline,
+    description: phTool.description,
+    votes: phTool.votesCount,
+    url: phTool.url,
+    website: phTool.website,
+    makers: phTool.makers ? phTool.makers.map(maker => ({
+      id: maker.id,
+      name: maker.name,
+      username: maker.username,
+      profileImage: maker.profileImage
+    })) : [],
+    topics: phTool.topics?.edges?.map(edge => edge.node.name) || [],
+    featured_at: new Date(phTool.createdAt),
+    source: 'Product Hunt',
+    created_at: new Date(),
+    updated_at: new Date()
+  }
+}
+
 // Route handler function
 async function handleRoute(request, { params }) {
   const { path = [] } = params
@@ -45,6 +72,109 @@ async function handleRoute(request, { params }) {
     // Root endpoint - GET /api/root (since /api/ is not accessible with catch-all)
     if (route === '/' && method === 'GET') {
       return handleCORS(NextResponse.json({ message: "Hello World" }))
+    }
+
+    // AI Tools endpoints - GET /api/ai-tools
+    if (route === '/ai-tools' && method === 'GET') {
+      const searchParams = new URL(request.url).searchParams;
+      const page = parseInt(searchParams.get('page') || '1');
+      const limit = parseInt(searchParams.get('limit') || '12');
+      const search = searchParams.get('search') || '';
+      const source = searchParams.get('source') || 'all';
+      
+      const skip = (page - 1) * limit;
+      
+      // Build query
+      let query = {};
+      if (search) {
+        query.$or = [
+          { name: { $regex: search, $options: 'i' } },
+          { tagline: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } }
+        ];
+      }
+      if (source !== 'all') {
+        query.source = source;
+      }
+      
+      const aiTools = await db.collection('ai_tools')
+        .find(query)
+        .sort({ featured_at: -1 })
+        .skip(skip)
+        .limit(limit)
+        .toArray();
+      
+      const total = await db.collection('ai_tools').countDocuments(query);
+      
+      // Remove MongoDB's _id field from response
+      const cleanedTools = aiTools.map(({ _id, ...rest }) => rest);
+      
+      return handleCORS(NextResponse.json({
+        tools: cleanedTools,
+        pagination: {
+          page,
+          limit,
+          total,
+          hasMore: skip + limit < total
+        }
+      }));
+    }
+
+    // AI Tools sync endpoint - POST /api/ai-tools/sync
+    if (route === '/ai-tools/sync' && method === 'POST') {
+      try {
+        const apolloClient = getClient();
+        const { data } = await apolloClient.query({
+          query: GET_AI_TOOLS,
+          variables: { first: 50 }
+        });
+        
+        const tools = data.posts.edges.map(edge => edge.node);
+        const aiTools = tools.filter(isAITool);
+        
+        let syncedCount = 0;
+        
+        for (const tool of aiTools) {
+          // Check if tool already exists
+          const existingTool = await db.collection('ai_tools').findOne({ ph_id: tool.id });
+          
+          if (!existingTool) {
+            const transformedTool = transformPHToolToDBFormat(tool);
+            await db.collection('ai_tools').insertOne(transformedTool);
+            syncedCount++;
+          }
+        }
+        
+        return handleCORS(NextResponse.json({
+          message: `Successfully synced ${syncedCount} new AI tools`,
+          synced: syncedCount,
+          total_found: aiTools.length
+        }));
+        
+      } catch (error) {
+        console.error('Error syncing AI tools:', error);
+        return handleCORS(NextResponse.json(
+          { error: 'Failed to sync AI tools from Product Hunt' },
+          { status: 500 }
+        ));
+      }
+    }
+
+    // AI Tools trending endpoint - GET /api/ai-tools/trending
+    if (route === '/ai-tools/trending' && method === 'GET') {
+      const limit = parseInt(new URL(request.url).searchParams.get('limit') || '10');
+      
+      const trendingTools = await db.collection('ai_tools')
+        .find({})
+        .sort({ votes: -1, featured_at: -1 })
+        .limit(limit)
+        .toArray();
+      
+      const cleanedTools = trendingTools.map(({ _id, ...rest }) => rest);
+      
+      return handleCORS(NextResponse.json({
+        tools: cleanedTools
+      }));
     }
 
     // Status endpoints - POST /api/status
