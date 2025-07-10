@@ -37,9 +37,9 @@ export default function WebsiteBuilder() {
       return
     }
 
+    console.log('🚀 Starting generation with:', { provider: apiProvider, promptLength: prompt.length })
     setLoading(true)
     setError('')
-    setGeneratedCode('')
     
     try {
       const response = await fetch('/api/website-builder/generate', {
@@ -54,30 +54,42 @@ export default function WebsiteBuilder() {
         })
       })
       
+      console.log('📡 API Response status:', response.status)
+      
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to generate website')
+        const errorText = await response.text()
+        console.error('❌ API Error:', response.status, errorText)
+        try {
+          const errorData = JSON.parse(errorText)
+          throw new Error(errorData.error || 'Failed to generate website')
+        } catch (parseError) {
+          throw new Error(`API Error ${response.status}: ${errorText}`)
+        }
       }
       
       const data = await response.json()
+      console.log('📦 API Response data:', { success: data.success, codeLength: data.code?.length })
       
       if (data.success && data.code) {
+        console.log('✅ Setting generated code, length:', data.code.length)
         setGeneratedCode(data.code)
-        console.log('Generated successfully:', data.code.substring(0, 200))
         
-        // Use a timeout to ensure iframe is rendered before updating
+        // Use setTimeout to ensure state updates properly
         setTimeout(() => {
+          console.log('🔄 Updating preview after state update')
           updatePreview(data.code)
-        }, 100)
+        }, 200)
       } else {
-        setError(data.error || 'Failed to generate website')
+        console.error('❌ Invalid response data:', data)
+        setError(data.error || 'Failed to generate website - invalid response')
       }
       
     } catch (err) {
-      console.error('Generation error:', err)
+      console.error('💥 Generation error:', err)
       setError(err.message)
     } finally {
       setLoading(false)
+      console.log('🏁 Generation process completed')
     }
   }
 
