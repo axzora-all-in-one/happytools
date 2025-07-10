@@ -512,12 +512,18 @@ Generate a complete, professional React.js website that looks like it was built 
         cleanCode = cleanCode.replace(/<\/?body[^>]*>/gi, '')
         cleanCode = cleanCode.trim()
         
-        // Basic security validation
+        // Security validation - allow React.js patterns but block truly dangerous content
         const dangerousPatterns = [
-          /<script[^>]*>(?!.*tailwind).*<\/script>/gi,
+          // Block external script sources (but allow inline React code)
+          /<script[^>]*src=["'][^"']*(?!.*tailwind|.*react|.*babel)[^"']*["']/gi,
+          // Block external iframes (but allow data: urls)
           /<iframe[^>]*src=["'][^"']*(?!data:)[^"']*["']/gi,
-          /javascript:/gi,
-          /on\w+\s*=/gi
+          // Block javascript: urls
+          /javascript:\s*[^"'\s]/gi,
+          // Block dangerous functions (but allow React event handlers)
+          /\b(?:eval|Function|setTimeout|setInterval)\s*\(/gi,
+          // Block document.write and similar
+          /\b(?:document\.write|document\.writeln)\s*\(/gi
         ]
         
         for (const pattern of dangerousPatterns) {
