@@ -79,7 +79,12 @@ export default function WebsiteBuilder() {
   }
 
   const updatePreview = (code) => {
-    if (!iframeRef.current) return
+    console.log('Updating preview with code:', code.substring(0, 100))
+    
+    if (!iframeRef.current) {
+      console.log('No iframe ref available')
+      return
+    }
     
     const fullHTML = `<!DOCTYPE html>
 <html lang="en">
@@ -136,14 +141,26 @@ export default function WebsiteBuilder() {
         ${code}
         
         // Render the component
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        try {
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        } catch (error) {
+            console.error('Error rendering React component:', error);
+            document.getElementById('root').innerHTML = '<div style="padding: 20px; color: red;">Error rendering component: ' + error.message + '</div>';
+        }
     </script>
 </body>
 </html>`
     
-    // Set the iframe content directly
-    iframeRef.current.srcdoc = fullHTML
+    console.log('Setting iframe srcdoc, length:', fullHTML.length)
+    
+    // Set the iframe content
+    try {
+      iframeRef.current.srcdoc = fullHTML
+      console.log('✅ Iframe srcdoc updated successfully')
+    } catch (error) {
+      console.error('❌ Error updating iframe:', error)
+    }
   }
 
   const getPreviewWidth = () => {
