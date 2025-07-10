@@ -450,7 +450,7 @@ export default function WebsiteBuilder() {
                     <p className="text-purple-600 font-medium text-lg">Generating your beautiful website...</p>
                     <p className="text-gray-500 text-sm mt-2">Creating vibrant design with AI</p>
                   </div>
-                ) : generatedCode ? (
+                ) : previewSrcDoc ? (
                   <div 
                     className="h-full bg-white shadow-lg transition-all duration-300" 
                     style={{ width: getPreviewWidth() }}
