@@ -391,15 +391,36 @@ export default function WebsiteBuilder() {
               rows={12}
             />
 
+            {/* Template Quick Start */}
+            <div className="mt-6">
+              <Label className="text-gray-300">Professional Templates</Label>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {[
+                  { name: "SaaS Landing", prompt: "Create a professional SaaS landing page with modern hero section, feature grid, pricing tiers, and customer testimonials" },
+                  { name: "E-commerce", prompt: "Build a modern e-commerce store with product showcase, shopping cart, and checkout flow" },
+                  { name: "Portfolio", prompt: "Design a creative portfolio website with project gallery, about section, and contact form" },
+                  { name: "Startup", prompt: "Create a tech startup homepage with product demo, team section, and investor pitch" }
+                ].map((template, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setPrompt(template.prompt)}
+                    className="p-3 text-xs bg-gradient-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-purple-500/30 border border-blue-500/30 rounded-lg text-blue-300 transition-all duration-200 hover:scale-105"
+                  >
+                    {template.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Example Prompts */}
-            <div className="mt-4">
-              <p className="text-sm font-medium text-gray-300 mb-2">Example Prompts:</p>
-              <div className="space-y-2 max-h-32 overflow-y-auto">
+            <div className="mt-6">
+              <Label className="text-gray-300">Example Prompts</Label>
+              <div className="space-y-2 mt-2 max-h-40 overflow-y-auto">
                 {examplePrompts.map((example, index) => (
                   <button
                     key={index}
                     onClick={() => setPrompt(example)}
-                    className="w-full text-left text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded transition-colors"
+                    className="w-full text-left text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-3 rounded-lg transition-colors"
                   >
                     {example}
                   </button>
