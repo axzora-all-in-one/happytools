@@ -346,6 +346,371 @@ async function handleRoute(request, { params }) {
         let result = ''
         
         switch (agentId) {
+          case 'intro-email':
+            if (!inputs.person1 || !inputs.person2 || !inputs.purpose) {
+              result = 'Please provide both person names and introduction purpose.'
+            } else {
+              result = `Subject: Introduction - ${inputs.person1} and ${inputs.person2}
+
+Dear ${inputs.person2},
+
+I hope this email finds you well. I wanted to introduce you to ${inputs.person1}, who I believe would be a valuable connection for you.
+
+${inputs.purpose}
+
+${inputs.context || 'I think you both would benefit from connecting and potentially collaborating.'}
+
+I'll let you both take it from here. ${inputs.person1}, please feel free to reach out to ${inputs.person2} directly.
+
+Best regards,
+[Your Name]
+
+---
+Introduction email generated between ${inputs.person1} and ${inputs.person2}`
+            }
+            break
+            
+          case 'follow-up-writer':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key.'
+            } else if (!inputs.previousEmail || !inputs.recipient) {
+              result = 'Please provide the previous email/conversation and recipient name.'
+            } else {
+              try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: [
+                      {
+                        role: "system",
+                        content: `You are a professional email writer. Create a polite, professional follow-up email for the purpose: ${inputs.purpose || 'general follow-up'}`
+                      },
+                      {
+                        role: "user", 
+                        content: `Write a follow-up email to ${inputs.recipient}. Previous conversation: "${inputs.previousEmail}". Purpose: ${inputs.purpose || 'Check Status'}`
+                      }
+                    ],
+                    max_tokens: 300
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error generating follow-up email: ${error.message}`
+              }
+            }
+            break
+            
+          case 'stock-finder':
+            if (!inputs.apiKey) {
+              result = `Most Traded Stocks - ${inputs.market || 'US'} Market
+
+⚠️ This agent requires a RapidAPI key for Yahoo Finance API.
+
+To get real-time stock data:
+1. Go to rapidapi.com
+2. Subscribe to Yahoo Finance API
+3. Add your API key above
+
+Demo Data (${inputs.timeframe || 'Today'}):
+📈 AAPL - Apple Inc. - Volume: 45.2M
+📈 TSLA - Tesla Inc. - Volume: 38.7M  
+📈 NVDA - NVIDIA Corp - Volume: 42.1M
+📈 MSFT - Microsoft Corp - Volume: 28.9M
+📈 AMZN - Amazon.com Inc - Volume: 35.6M
+
+Note: This is demo data. Use your RapidAPI key for real-time information.`
+            } else {
+              result = `Most Traded Stocks - ${inputs.market || 'US'} Market (${inputs.timeframe || 'Today'})
+
+🔄 Fetching real-time data with your API key...
+
+Note: Real Yahoo Finance API integration would be implemented here with your provided API key.
+
+Demo structure:
+📈 Stock Symbol - Company Name - Volume: XXX
+📊 Price: $XXX.XX | Change: +X.XX%
+🕒 Last Updated: [Timestamp]`
+            }
+            break
+            
+          case 'crypto-pulse':
+            const cryptoData = {
+              'Top 10': [
+                '₿ Bitcoin (BTC): $43,250 (+2.4%)',
+                'Ξ Ethereum (ETH): $2,650 (+1.8%)',
+                '🟢 BNB: $315 (+0.9%)',
+                '💰 XRP: $0.63 (+4.2%)',
+                '🔵 Cardano (ADA): $0.48 (+1.5%)'
+              ],
+              'All Markets': [
+                '📈 Biggest Gainers: SOL (+8.2%), MATIC (+6.1%)',
+                '📉 Biggest Losers: DOGE (-3.4%), SHIB (-2.8%)',
+                '💹 Highest Volume: BTC, ETH, USDT'
+              ]
+            }
+            
+            const selectedData = cryptoData[inputs.focus] || cryptoData['Top 10']
+            result = `Crypto Market Pulse - ${inputs.focus || 'Top 10'} (${inputs.timeframe || '24h'})
+
+${selectedData.join('\n')}
+
+📊 Market Overview:
+• Total Market Cap: $1.68T
+• 24h Volume: $68.5B
+• Bitcoin Dominance: 52.3%
+• Fear & Greed Index: 65 (Greed)
+
+⏰ Data as of: ${new Date().toLocaleString()}
+📡 Source: CoinGecko API (Demo Data)
+
+Note: This is demo data. Real implementation would use CoinGecko or CoinMarketCap APIs.`
+            break
+            
+          case 'ai-detector':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for AI detection analysis.'
+            } else if (!inputs.text) {
+              result = 'Please provide text to analyze.'
+            } else {
+              try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: [
+                      {
+                        role: "system",
+                        content: "You are an AI detection expert. Analyze the given text and determine if it was likely written by AI or human. Look for patterns like repetitive phrasing, overly formal language, lack of personal touch, or generic content. Provide a confidence percentage."
+                      },
+                      {
+                        role: "user",
+                        content: `Please analyze this text and determine if it was written by AI or human: "${inputs.text}"`
+                      }
+                    ],
+                    max_tokens: 200
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error analyzing text: ${error.message}`
+              }
+            }
+            break
+            
+          case 'seo-writer':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for SEO blog writing.'
+            } else if (!inputs.topic) {
+              result = 'Please provide a blog topic.'
+            } else {
+              try {
+                const keywords = inputs.keywords || inputs.topic
+                const length = inputs.length || 'Medium (1000 words)'
+                const tone = inputs.tone || 'Professional'
+                
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: [
+                      {
+                        role: "system",
+                        content: `You are an expert SEO content writer. Write a ${length} blog post about "${inputs.topic}" in a ${tone} tone. Include these keywords naturally: ${keywords}. Structure with H1, H2, H3 headers, include meta description, and optimize for search engines.`
+                      },
+                      {
+                        role: "user",
+                        content: `Write an SEO-optimized blog post about: ${inputs.topic}. Target keywords: ${keywords}. Length: ${length}. Tone: ${tone}`
+                      }
+                    ],
+                    max_tokens: 1500
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error generating SEO blog post: ${error.message}`
+              }
+            }
+            break
+            
+          case 'pdf-explainer':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for PDF analysis.'
+            } else if (!inputs.pdfText) {
+              result = 'Please provide the PDF content (copy and paste text from your PDF).'
+            } else {
+              try {
+                const task = inputs.task || 'Summary'
+                let systemPrompt = ''
+                
+                switch (task) {
+                  case 'Summary':
+                    systemPrompt = 'Provide a clear, concise summary of the document content.'
+                    break
+                  case 'Key Points':
+                    systemPrompt = 'Extract and list the key points from the document in bullet format.'
+                    break
+                  case 'Q&A':
+                    systemPrompt = 'Create relevant questions and answers based on the document content.'
+                    break
+                  case 'Explanation':
+                    systemPrompt = 'Explain the document content in simple, easy-to-understand terms.'
+                    break
+                  case 'Action Items':
+                    systemPrompt = 'Identify and list any action items, tasks, or next steps mentioned in the document.'
+                    break
+                }
+                
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: [
+                      {
+                        role: "system",
+                        content: systemPrompt
+                      },
+                      {
+                        role: "user",
+                        content: `Please analyze this document: "${inputs.pdfText}"`
+                      }
+                    ],
+                    max_tokens: 800
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error analyzing PDF: ${error.message}`
+              }
+            }
+            break
+            
+          case 'fine-print-checker':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for contract analysis.'
+            } else if (!inputs.document) {
+              result = 'Please provide the contract or policy text to analyze.'
+            } else {
+              try {
+                const focus = inputs.focus || 'All Issues'
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: [
+                      {
+                        role: "system",
+                        content: `You are a legal contract analyzer. Review the document and identify potential issues, focusing on: ${focus}. Highlight concerning clauses, hidden fees, unusual terms, and potential risks. Provide clear explanations in plain English.`
+                      },
+                      {
+                        role: "user",
+                        content: `Please analyze this contract/policy for potential issues (focus: ${focus}): "${inputs.document}"`
+                      }
+                    ],
+                    max_tokens: 800
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error analyzing contract: ${error.message}`
+              }
+            }
+            break
+            
+          case 'clara-coach':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key so Clara can help you.'
+            } else if (!inputs.situation) {
+              result = 'Please tell Clara about your current situation so she can provide personalized guidance.'
+            } else {
+              try {
+                const mood = inputs.mood || 'Neutral'
+                const goal = inputs.goal || 'General guidance'
+                
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: [
+                      {
+                        role: "system",
+                        content: `You are Clara, a warm, empathetic personal growth coach. You provide thoughtful, encouraging advice while being realistic and practical. The person is feeling ${mood} and needs help with ${goal}. Be supportive, ask insightful questions, and provide actionable advice. Keep responses conversational and caring.`
+                      },
+                      {
+                        role: "user",
+                        content: `Hi Clara! I'm feeling ${mood} right now. Here's my situation: ${inputs.situation}. I need help with ${goal}. Can you guide me?`
+                      }
+                    ],
+                    max_tokens: 400
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = `💝 Clara says:\n\n${data.choices[0].message.content}\n\n---\n❤️ Remember: You've got this! Clara is here whenever you need support.`
+              } catch (error) {
+                result = `Clara is having trouble connecting right now: ${error.message}\n\nBut Clara wants you to know: Whatever you're going through, you're stronger than you think! 💪✨`
+              }
+            }
+            break
+            
           case 'text-summarizer':
             if (!inputs.text || inputs.text.length < 50) {
               result = 'Please provide a longer text to summarize (at least 50 characters).'
