@@ -61,6 +61,8 @@ export default function WebsiteBuilder() {
 
     setLoading(true)
     setError('')
+    setGeneratedCode('') // Clear previous code
+    setPreviewSrcDoc('') // Clear previous preview
     
     try {
       const response = await fetch('/api/website-builder/generate', {
@@ -76,19 +78,22 @@ export default function WebsiteBuilder() {
       })
       
       if (!response.ok) {
-        throw new Error('Failed to generate website')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to generate website')
       }
       
       const data = await response.json()
       
-      if (data.success) {
+      if (data.success && data.code) {
         setGeneratedCode(data.code)
         updatePreview(data.code)
+        console.log('Generated website successfully:', data.code.substring(0, 200) + '...')
       } else {
         setError(data.error || 'Failed to generate website')
       }
       
     } catch (err) {
+      console.error('Generation error:', err)
       setError(err.message)
     } finally {
       setLoading(false)
