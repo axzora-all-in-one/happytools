@@ -504,20 +504,50 @@ Generate a complete, professional React.js website component that looks like it 
           generatedCode = data.candidates[0].content.parts[0].text
         }
         
-        // Clean up the generated code
-        let cleanCode = generatedCode.replace(/```html\n?/g, '').replace(/```\n?$/g, '').trim()
+        // Clean the generated code to extract just the React component
+        let cleanCode = generatedCode.trim()
         
-        // Extract body content if full HTML is provided
-        const bodyMatch = cleanCode.match(/<body[^>]*>([\s\S]*)<\/body>/i)
-        if (bodyMatch) {
-          cleanCode = bodyMatch[1].trim()
+        // Remove markdown code blocks
+        cleanCode = cleanCode.replace(/^```(?:jsx|javascript|js)?\n?/gm, '')
+        cleanCode = cleanCode.replace(/\n?```$/gm, '')
+        
+        // Remove explanatory text before the component
+        const componentStart = cleanCode.search(/(?:const|function)\s+\w+\s*=|\w+\s*=\s*\(\s*\)\s*=>/)
+        if (componentStart > 0) {
+          cleanCode = cleanCode.substring(componentStart)
         }
         
-        // Remove html, head, and body tags if they exist
-        cleanCode = cleanCode.replace(/<\/?html[^>]*>/gi, '')
-        cleanCode = cleanCode.replace(/<\/?head[^>]*>/gi, '')
-        cleanCode = cleanCode.replace(/<\/?body[^>]*>/gi, '')
-        cleanCode = cleanCode.trim()
+        // If the code doesn't start with a component, try to extract it
+        if (!cleanCode.match(/^(?:const|function|export)/)) {
+          const lines = cleanCode.split('\n')
+          let startIndex = -1
+          
+          for (let i = 0; i < lines.length; i++) {
+            if (lines[i].match(/(?:const|function)\s+\w+\s*=|\w+\s*=\s*\(\s*\)\s*=>/)) {
+              startIndex = i
+              break
+            }
+          }
+          
+          if (startIndex >= 0) {
+            cleanCode = lines.slice(startIndex).join('\n')
+          }
+        }
+        
+        // Ensure the component ends with export default
+        if (!cleanCode.includes('export default')) {
+          // Try to find the main component name
+          const componentMatch = cleanCode.match(/(?:const|function)\s+(\w+)\s*=/)
+          if (componentMatch) {
+            const componentName = componentMatch[1]
+            if (!cleanCode.trim().endsWith(';')) {
+              cleanCode += '\n'
+            }
+            cleanCode += `\nexport default ${componentName};`
+          } else {
+            cleanCode += '\nexport default App;'
+          }
+        }
         
         // Security validation - allow React.js patterns but block truly dangerous content
         const dangerousPatterns = [
