@@ -516,8 +516,6 @@ Generate a complete, professional website that looks like it was built by a top-
         cleanCode = cleanCode.replace(/^.*?(?=<)/s, '');
         
         generatedCode = cleanCode
-          }
-          
           if (startIndex >= 0) {
             cleanCode = lines.slice(startIndex).join('\n')
           }
