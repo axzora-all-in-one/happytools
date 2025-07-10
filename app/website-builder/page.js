@@ -61,8 +61,7 @@ export default function WebsiteBuilder() {
 
     setLoading(true)
     setError('')
-    setGeneratedCode('') // Clear previous code
-    setPreviewSrcDoc('') // Clear previous preview
+    // Don't clear previewSrcDoc here to avoid flashing
     
     try {
       const response = await fetch('/api/website-builder/generate', {
@@ -85,8 +84,53 @@ export default function WebsiteBuilder() {
       const data = await response.json()
       
       if (data.success && data.code) {
+        // Atomic state update - create the preview HTML first
+        const fullHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Website</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { margin: 0; padding: 0; }
+        * { box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    ${data.code}
+    <script>
+        // Handle form submissions and links safely
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A' && e.target.href) {
+                e.preventDefault();
+                console.log('Link clicked:', e.target.href);
+            }
+        });
+        
+        document.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Form submitted');
+        });
+    </script>
+</body>
+</html>`
+        
+        // Set both states together
         setGeneratedCode(data.code)
-        updatePreview(data.code)
+        setPreviewSrcDoc(fullHTML)
         console.log('Generated website successfully:', data.code.substring(0, 200) + '...')
       } else {
         setError(data.error || 'Failed to generate website')
