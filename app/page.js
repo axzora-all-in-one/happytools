@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import ModernHeroSection from '@/components/ModernHeroSection'
-import ModernToolsGrid from '@/components/ModernToolsGrid'
+import SimplifiedToolsGrid from '@/components/SimplifiedToolsGrid'
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -22,7 +22,7 @@ export default function Home() {
         onSearch={handleSearch} 
         onCategoryFilter={handleCategoryFilter}
       />
-      <ModernToolsGrid 
+      <SimplifiedToolsGrid 
         searchQuery={searchQuery} 
         categoryFilter={categoryFilter}
       />
