@@ -311,7 +311,7 @@ export default function ModernToolsGrid({ searchQuery = '', categoryFilter = 'al
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="flex-1 border-white/20 text-white hover:bg-white/10"
+                        className="flex-1 border-white/30 text-gray-200 hover:bg-white/20 hover:text-white bg-white/10"
                         onClick={() => window.open(tool.url, '_blank')}
                       >
                         <ExternalLink className="w-3 h-3 mr-1" />
