@@ -96,7 +96,7 @@ export default function WebsiteBuilder() {
   }
 
   const updatePreview = (code) => {
-    // Using srcDoc instead of document manipulation for better security and compatibility
+    // Create full HTML with Tailwind CSS for the preview
     const fullHTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -140,9 +140,7 @@ export default function WebsiteBuilder() {
 </body>
 </html>`
     
-    if (iframeRef.current) {
-      iframeRef.current.srcdoc = fullHTML
-    }
+    setPreviewSrcDoc(fullHTML)
   }
 
   const copyCode = async () => {
