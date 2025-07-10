@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for AI Tools Discovery Platform
-Tests all API endpoints, Product Hunt integration, and MongoDB operations
+HappyTools AI Tools Discovery Platform - Enhanced Backend Testing
+Tests all new features including AITools.fyi scraper, enhanced filtering, and new endpoints
 """
 
 import requests
@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Get base URL from environment
-BASE_URL = "https://72a54ba1-07cf-4ab8-897f-ab6090b9679b.preview.emergentagent.com"
+BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://72a54ba1-07cf-4ab8-897f-ab6090b9679b.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 def log_test(test_name, status, details=""):
