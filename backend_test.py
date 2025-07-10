@@ -850,7 +850,9 @@ class HappyToolsBackendTester:
         print(f"🌐 API Base URL: {self.api_base}")
         print("=" * 80)
         
-        # Test all endpoints
+        # Test AI Tools Discovery Platform endpoints
+        print("🔧 TESTING AI TOOLS DISCOVERY PLATFORM")
+        print("-" * 50)
         self.test_enhanced_ai_tools_endpoint()
         self.test_product_hunt_sync()
         self.test_aitools_fyi_sync()
@@ -860,6 +862,20 @@ class HappyToolsBackendTester:
         self.test_stats_endpoint()
         self.test_status_endpoint()
         self.test_data_quality()
+        
+        # Test AI Agents functionality
+        print("\n🤖 TESTING AI AGENTS FUNCTIONALITY")
+        print("-" * 50)
+        self.test_ai_agents_text_summarizer()
+        self.test_ai_agents_content_writer()
+        self.test_ai_agents_code_generator()
+        self.test_ai_agents_email_writer()
+        self.test_ai_agents_social_media()
+        self.test_ai_agents_translator()
+        self.test_ai_agents_data_analyzer()
+        self.test_ai_agents_image_generator()
+        self.test_ai_agents_unknown_agent()
+        self.test_ai_agents_malformed_request()
         
         # Summary
         print("=" * 80)
