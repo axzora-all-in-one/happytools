@@ -362,29 +362,36 @@ async function handleRoute(request, { params }) {
         
         const systemPrompt = `You are an expert React.js developer and modern web designer. Generate a complete, professional, production-ready React.js website using functional components with hooks.
 
+CRITICAL INSTRUCTIONS:
+- Return ONLY the React.js component code - NO explanations, NO markdown, NO code blocks
+- Do NOT include any text before or after the code
+- Do NOT wrap in \`\`\`jsx or \`\`\`javascript 
+- Start directly with the component function
+- End with the component export
+
 REQUIREMENTS:
 - Create STUNNING, PROFESSIONAL websites that rival lovable.io and bolt.new quality
 - Use React.js functional components with hooks (useState, useEffect)
 - Use advanced Tailwind CSS with modern design patterns
 - Create IMPRESSIVE, VISUALLY STRIKING designs with:
   * Complex gradient backgrounds and glass morphism effects
-  * Advanced animations (framer-motion style with CSS)
-  * Interactive hover effects and micro-interactions
+  * Advanced animations and micro-interactions
+  * Interactive hover effects and smooth transitions
   * Modern typography and spacing
   * Professional color schemes and visual hierarchy
   * Sophisticated layouts with cards, grids, and sections
 
 DESIGN EXCELLENCE:
-- Use cutting-edge design trends: gradients, glass effects, neumorphism, dark themes
+- Use cutting-edge design trends: gradients, glass effects, modern UI patterns
 - Create engaging hero sections with animated elements
-- Add interactive components: buttons, forms, modals, cards
+- Add interactive components: buttons, forms, cards with hover effects
 - Use modern icons and visual elements
 - Implement responsive design with advanced breakpoints
-- Add sophisticated color palettes (not just basic colors)
+- Add sophisticated color palettes and visual depth
 
 REACT.JS PATTERNS:
 - Use functional components with hooks
-- Implement interactive state management
+- Implement interactive state management with useState
 - Add event handlers for user interactions
 - Create reusable component patterns
 - Use proper React patterns and best practices
@@ -396,21 +403,21 @@ STYLING GUIDELINES:
 - Use advanced color combinations and transparency
 - Implement smooth transitions and hover effects
 
-CONTENT QUALITY:
-- Generate realistic, professional content
-- Use engaging copy and compelling headlines
-- Add relevant sections: hero, features, testimonials, pricing, contact
-- Include interactive elements and call-to-actions
+COMPONENT STRUCTURE:
+- Create a main component function (name it App)
+- Use multiple nested components for organization
+- Include proper state management
+- Add realistic, professional content
+- Export the component as default
 
-IMPORTANT:
-- Return ONLY the React.js component code (no imports, just the component function)
-- Use modern, professional design that looks like a real startup/business website
-- Make it visually impressive and interactive
-- Focus on creating websites that users would actually use
-- Use Tailwind CSS classes exclusively
-- Create responsive, mobile-first designs
+IMPORTANT OUTPUT FORMAT:
+- Return ONLY the React component code
+- NO explanations, comments, or markdown
+- Start with: const App = () => {
+- End with: export default App;
+- Make it production-ready and visually stunning
 
-Generate a complete, professional React.js website that looks like it was built by a top-tier web agency.`
+Generate a complete, professional React.js website component that looks like it was built by a top-tier web agency.`
         
         let generatedCode = ''
         
