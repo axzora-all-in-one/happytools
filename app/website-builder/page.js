@@ -370,97 +370,23 @@ export default function WebsiteBuilder() {
                 <Zap className="w-5 h-5 mr-2" />
                 Describe Your Website
               </h2>
-              {/* Demo Mode Button */}
-              <div className="mt-4">
-                <Button
-                  onClick={() => {
-                    // Demo mode - generate a sample React component
-                    const demoCode = `const App = () => {
-  const [isHovered, setIsHovered] = useState(false);
-  
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 flex items-center justify-center p-4">
-      <div className="max-w-4xl mx-auto text-center">
-        <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20">
-          <h1 className="text-6xl font-bold text-white mb-6 animate-pulse">
-            Welcome to the Future
-          </h1>
-          <p className="text-xl text-white/90 mb-8 leading-relaxed">
-            Experience the next generation of web development with our AI-powered platform. 
-            Create stunning, interactive websites in seconds.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              className={\`px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-full transition-all duration-300 transform \${isHovered ? 'scale-105 shadow-2xl' : 'scale-100'}\`}
-            >
-              Get Started Now
-            </button>
-            <button className="px-8 py-4 bg-white/20 text-white font-semibold rounded-full hover:bg-white/30 transition-all duration-300 border border-white/30">
-              Learn More
-            </button>
-          </div>
-        </div>
-        
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { title: "Lightning Fast", desc: "Build websites in seconds, not hours" },
-            { title: "AI-Powered", desc: "Advanced AI creates professional designs" },
-            { title: "Fully Responsive", desc: "Works perfectly on all devices" }
-          ].map((feature, index) => (
-            <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
-              <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
-              <p className="text-white/80">{feature.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default App;`;
-
-                    setGeneratedCode(demoCode);
-                    
-                    // Create preview HTML
-                    const fullHTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generated Website</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <style>
-        body { margin: 0; padding: 0; }
-        * { box-sizing: border-box; }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        
-        ${demoCode}
-        
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>`;
-                    
-                    setPreviewSrcDoc(fullHTML);
-                  }}
-                  variant="outline"
-                  className="w-full border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20"
-                >
-                  ✨ Try Demo Mode (No API Key Required)
-                </Button>
-              </div>
+              <Button
+                onClick={generateWebsite}
+                disabled={loading || !apiKey || !prompt}
+                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 mr-2" />
+                    Generate
+                  </>
+                )}
+              </Button>
             </div>
 
             <Textarea
