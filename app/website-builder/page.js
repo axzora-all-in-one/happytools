@@ -63,9 +63,12 @@ export default function WebsiteBuilder() {
       
       if (data.success && data.code) {
         setGeneratedCode(data.code)
-        // Force update the preview immediately
-        updatePreview(data.code)
         console.log('Generated successfully:', data.code.substring(0, 200))
+        
+        // Use a timeout to ensure iframe is rendered before updating
+        setTimeout(() => {
+          updatePreview(data.code)
+        }, 100)
       } else {
         setError(data.error || 'Failed to generate website')
       }
