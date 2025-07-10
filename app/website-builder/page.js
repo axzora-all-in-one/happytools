@@ -402,6 +402,7 @@ export default function WebsiteBuilder() {
                   >
                     <iframe
                       ref={iframeRef}
+                      srcDoc={previewSrcDoc}
                       className="w-full h-full border-0"
                       title="Website Preview"
                       sandbox="allow-scripts allow-same-origin"
