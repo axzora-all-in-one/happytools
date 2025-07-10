@@ -45,12 +45,12 @@ export default function WebsiteBuilder() {
   ]
 
   const examplePrompts = [
-    "Create a modern landing page for a SaaS product with hero section, features, pricing, and footer",
-    "Build a portfolio website for a web developer with projects showcase and contact form",
-    "Design a restaurant website with menu, location, and online ordering",
-    "Create an e-commerce product page with image gallery, description, and buy button",
-    "Build a blog homepage with article cards, sidebar, and navigation",
-    "Design a startup landing page with animated hero, testimonials, and call-to-action"
+    "Create a vibrant fitness coaching website with purple and pink gradients, hero section with workout videos, colorful service cards, and testimonials",
+    "Build a modern SaaS landing page with blue to purple gradients, animated features section, pricing cards with hover effects, and colorful call-to-action",
+    "Design a creative portfolio website with rainbow gradients, animated project cards, colorful skill bars, and interactive contact form",
+    "Create a restaurant website with warm orange and red gradients, mouth-watering food gallery, colorful menu cards, and booking form",
+    "Build a tech startup homepage with neon green and blue gradients, animated product showcase, colorful team cards, and glowing buttons",
+    "Design a beauty salon website with pink and purple gradients, before/after gallery, colorful service cards, and appointment booking"
   ]
 
   const generateWebsite = async () => {
