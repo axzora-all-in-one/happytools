@@ -526,13 +526,31 @@ Generate a complete, professional React.js website that looks like it was built 
           /\b(?:document\.write|document\.writeln)\s*\(/gi
         ]
         
-        for (const pattern of dangerousPatterns) {
-          if (pattern.test(cleanCode)) {
-            return handleCORS(NextResponse.json(
-              { error: 'Generated code contains potentially unsafe content' },
-              { status: 400 }
-            ))
+        // Check for dangerous patterns
+        const foundDangerousPattern = dangerousPatterns.find(pattern => pattern.test(generatedCode))
+        if (foundDangerousPattern) {
+          console.log('Potentially unsafe content detected, cleaning code...')
+          // Instead of rejecting, try to clean the code
+          let cleanedCode = generatedCode
+          
+          // Remove dangerous script tags but preserve React code
+          cleanedCode = cleanedCode.replace(/<script[^>]*src=["'][^"']*(?!.*tailwind|.*react|.*babel)[^"']*["'][^>]*>.*?<\/script>/gi, '')
+          
+          // Remove javascript: urls
+          cleanedCode = cleanedCode.replace(/javascript:\s*[^"'\s]+/gi, '#')
+          
+          // Remove dangerous function calls
+          cleanedCode = cleanedCode.replace(/\b(?:eval|Function)\s*\(/gi, 'console.log(')
+          
+          // If still dangerous after cleaning, return error
+          if (dangerousPatterns.some(pattern => pattern.test(cleanedCode))) {
+            return handleCORS(NextResponse.json({ 
+              error: 'Unable to generate safe code. Please try a different prompt.',
+              suggestion: 'Try describing your website without requesting specific JavaScript functions.'
+            }, { status: 400 }))
           }
+          
+          generatedCode = cleanedCode
         }
         
         // Save generated website to database
