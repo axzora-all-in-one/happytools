@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the enhanced HappyTools AI Tools Discovery Platform backend with new features: AITools.fyi web scraper, enhanced filtering/sorting, category management, and multiple sync endpoints. Key endpoints: GET /api/ai-tools (enhanced), POST /api/ai-tools/sync (Product Hunt), POST /api/ai-tools/sync-aitools (NEW), POST /api/ai-tools/sync-all (NEW), GET /api/ai-tools/categories (NEW), GET /api/ai-tools/stats (NEW), GET /api/ai-tools/trending"
+user_problem_statement: "Test the HappyTools platform with both AI Tools Discovery Platform and new AI Agents functionality. AI Tools Discovery Platform includes: AITools.fyi web scraper, enhanced filtering/sorting, category management, and multiple sync endpoints. AI Agents functionality includes: 8 different AI agents (text-summarizer, content-writer, code-generator, email-writer, social-media, translator, data-analyzer, image-generator) accessible via POST /api/agents/run endpoint with comprehensive input validation and error handling."
 
 backend:
   - task: "Enhanced GET /api/ai-tools endpoint with advanced filtering and sorting"
