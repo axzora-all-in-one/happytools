@@ -347,6 +347,432 @@ async function handleRoute(request, { params }) {
         let result = ''
         
         switch (agentId) {
+          case 'business-plan-generator':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for business plan generation.'
+            } else if (!inputs.businessIdea || !inputs.industry || !inputs.targetMarket) {
+              result = 'Please provide business idea, industry, and target market.'
+            } else {
+              try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-4",
+                    messages: [
+                      {
+                        role: "system",
+                        content: `You are a professional business consultant. Create a comprehensive business plan with executive summary, market analysis, financial projections, marketing strategy, and implementation timeline. Be specific and actionable.`
+                      },
+                      {
+                        role: "user",
+                        content: `Create a business plan for: ${inputs.businessIdea}. Industry: ${inputs.industry}. Target Market: ${inputs.targetMarket}. Budget: ${inputs.budget || 'Not specified'}.`
+                      }
+                    ],
+                    max_tokens: 2000
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error generating business plan: ${error.message}`
+              }
+            }
+            break
+            
+          case 'competitor-analysis':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for competitor analysis.'
+            } else if (!inputs.company || !inputs.competitors) {
+              result = 'Please provide your company name and list of competitors.'
+            } else {
+              try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-4",
+                    messages: [
+                      {
+                        role: "system",
+                        content: `You are a strategic business analyst. Perform a detailed ${inputs.analysisType} for the given company and competitors. Include strengths, weaknesses, opportunities, threats, and strategic recommendations.`
+                      },
+                      {
+                        role: "user",
+                        content: `Analyze ${inputs.company} against these competitors: ${inputs.competitors}. Focus on: ${inputs.analysisType}.`
+                      }
+                    ],
+                    max_tokens: 1500
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error performing competitor analysis: ${error.message}`
+              }
+            }
+            break
+            
+          case 'meeting-summarizer':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for meeting summarization.'
+            } else if (!inputs.transcript) {
+              result = 'Please provide the meeting transcript.'
+            } else {
+              try {
+                let systemPrompt = `You are a professional meeting assistant. `;
+                
+                switch (inputs.outputFormat) {
+                  case 'Executive Summary':
+                    systemPrompt += 'Create a high-level executive summary focusing on key decisions and strategic points.';
+                    break;
+                  case 'Action Items':
+                    systemPrompt += 'Extract and organize all action items with responsible parties and deadlines.';
+                    break;
+                  case 'Key Decisions':
+                    systemPrompt += 'Focus on decisions made and their implications.';
+                    break;
+                  default:
+                    systemPrompt += 'Create a comprehensive summary including key points, decisions, and action items.';
+                }
+                
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-4",
+                    messages: [
+                      {
+                        role: "system",
+                        content: systemPrompt
+                      },
+                      {
+                        role: "user",
+                        content: `Summarize this ${inputs.meetingType} meeting transcript: "${inputs.transcript}"`
+                      }
+                    ],
+                    max_tokens: 1200
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error summarizing meeting: ${error.message}`
+              }
+            }
+            break
+            
+          case 'sales-email-sequences':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for sales email generation.'
+            } else if (!inputs.product || !inputs.targetAudience) {
+              result = 'Please provide product/service and target audience information.'
+            } else {
+              try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-4",
+                    messages: [
+                      {
+                        role: "system",
+                        content: `You are a sales copywriting expert. Create a ${inputs.emailCount} ${inputs.sequenceType} email sequence. Include subject lines, personalization tips, and timing recommendations for each email.`
+                      },
+                      {
+                        role: "user",
+                        content: `Create ${inputs.emailCount} for ${inputs.sequenceType} selling "${inputs.product}" to "${inputs.targetAudience}".`
+                      }
+                    ],
+                    max_tokens: 2000
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error generating sales email sequence: ${error.message}`
+              }
+            }
+            break
+            
+          case 'market-research-ai':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for market research.'
+            } else if (!inputs.market) {
+              result = 'Please specify the market or industry to research.'
+            } else {
+              try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-4",
+                    messages: [
+                      {
+                        role: "system",
+                        content: `You are a market research analyst. Conduct ${inputs.researchType} for the specified market with focus on ${inputs.geography} over ${inputs.timeframe}. Include market size, trends, opportunities, and challenges.`
+                      },
+                      {
+                        role: "user",
+                        content: `Research the ${inputs.market} market. Focus: ${inputs.researchType}. Geography: ${inputs.geography}. Timeframe: ${inputs.timeframe}.`
+                      }
+                    ],
+                    max_tokens: 1800
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error conducting market research: ${error.message}`
+              }
+            }
+            break
+            
+          case 'user-persona-generator':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for persona generation.'
+            } else if (!inputs.product) {
+              result = 'Please describe your product or service.'
+            } else {
+              try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-4",
+                    messages: [
+                      {
+                        role: "system",
+                        content: `You are a UX researcher. Create ${inputs.personaCount} detailed user personas for a ${inputs.industry} product. Include ${inputs.includeData} for each persona with demographics, behaviors, pain points, goals, and motivations.`
+                      },
+                      {
+                        role: "user",
+                        content: `Create user personas for: ${inputs.product}. Industry: ${inputs.industry}. Number: ${inputs.personaCount}. Include: ${inputs.includeData}.`
+                      }
+                    ],
+                    max_tokens: 1600
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error generating user personas: ${error.message}`
+              }
+            }
+            break
+            
+          case 'financial-projections':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for financial projections.'
+            } else if (!inputs.businessType) {
+              result = 'Please specify your business type.'
+            } else {
+              try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-4",
+                    messages: [
+                      {
+                        role: "system",
+                        content: `You are a financial analyst. Create ${inputs.projectionPeriod} financial projections for a ${inputs.businessType} business with current revenue of ${inputs.revenue}. Include ${inputs.includeScenarios} scenarios with P&L, cash flow, and key metrics.`
+                      },
+                      {
+                        role: "user",
+                        content: `Generate financial projections for ${inputs.businessType} business. Current revenue: ${inputs.revenue}. Period: ${inputs.projectionPeriod}. Scenarios: ${inputs.includeScenarios}.`
+                      }
+                    ],
+                    max_tokens: 1800
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error generating financial projections: ${error.message}`
+              }
+            }
+            break
+            
+          case 'code-reviewer':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for code review.'
+            } else if (!inputs.code) {
+              result = 'Please provide the code to review.'
+            } else {
+              try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-4",
+                    messages: [
+                      {
+                        role: "system",
+                        content: `You are a senior software engineer conducting a code review. Focus on ${inputs.reviewFocus} for ${inputs.language} code. Show ${inputs.severity} issues with specific line references and improvement suggestions.`
+                      },
+                      {
+                        role: "user",
+                        content: `Review this ${inputs.language} code focusing on ${inputs.reviewFocus}: ${inputs.code}`
+                      }
+                    ],
+                    max_tokens: 1500
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error reviewing code: ${error.message}`
+              }
+            }
+            break
+            
+          case 'seo-content-optimizer':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for SEO optimization.'
+            } else if (!inputs.content || !inputs.targetKeyword) {
+              result = 'Please provide content and target keyword.'
+            } else {
+              try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-4",
+                    messages: [
+                      {
+                        role: "system",
+                        content: `You are an SEO expert. Perform ${inputs.optimizationLevel} optimization for a ${inputs.contentType} targeting "${inputs.targetKeyword}". Provide specific recommendations for improvements, keyword density, meta descriptions, and structure.`
+                      },
+                      {
+                        role: "user",
+                        content: `Optimize this ${inputs.contentType} content for "${inputs.targetKeyword}": ${inputs.content}`
+                      }
+                    ],
+                    max_tokens: 1500
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error optimizing content: ${error.message}`
+              }
+            }
+            break
+            
+          case 'automated-testing-generator':
+            if (!inputs.apiKey) {
+              result = 'Please provide your OpenAI API key for test generation.'
+            } else if (!inputs.feature) {
+              result = 'Please describe the feature to test.'
+            } else {
+              try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${inputs.apiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-4",
+                    messages: [
+                      {
+                        role: "system",
+                        content: `You are a QA engineer. Generate ${inputs.complexity} ${inputs.testType} for ${inputs.framework}. Include test cases, setup, assertions, and edge cases.`
+                      },
+                      {
+                        role: "user",
+                        content: `Generate ${inputs.testType} using ${inputs.framework} for: ${inputs.feature}. Complexity: ${inputs.complexity}.`
+                      }
+                    ],
+                    max_tokens: 1500
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error(`OpenAI API error: ${response.status}`)
+                }
+                
+                const data = await response.json()
+                result = data.choices[0].message.content
+              } catch (error) {
+                result = `Error generating tests: ${error.message}`
+              }
+            }
+            break
+            
           case 'intro-email':
             if (!inputs.person1 || !inputs.person2 || !inputs.purpose) {
               result = 'Please provide both person names and introduction purpose.'
