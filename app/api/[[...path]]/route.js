@@ -42,13 +42,8 @@ function transformPHToolToDBFormat(phTool) {
     votes: phTool.votesCount,
     url: phTool.url,
     website: phTool.website,
-    makers: phTool.makers ? phTool.makers.map(maker => ({
-      id: maker.id,
-      name: maker.name,
-      username: maker.username,
-      profileImage: maker.profileImage
-    })) : [],
-    topics: phTool.topics?.edges?.map(edge => edge.node.name) || [],
+    makers: [], // Simplified - no makers data in reduced query
+    topics: [], // Simplified - no topics data in reduced query
     featured_at: new Date(phTool.createdAt),
     source: 'Product Hunt',
     created_at: new Date(),
