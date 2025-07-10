@@ -516,8 +516,6 @@ Generate a complete, professional website that looks like it was built by a top-
         cleanCode = cleanCode.replace(/^.*?(?=<)/s, '');
         
         generatedCode = cleanCode
-          }
-        }
         
         // Ensure the component ends with export default
         if (!cleanCode.includes('export default')) {
