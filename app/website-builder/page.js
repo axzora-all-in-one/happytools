@@ -95,13 +95,8 @@ export default function WebsiteBuilder() {
   }
 
   const updatePreview = (code) => {
-    if (iframeRef.current) {
-      const iframe = iframeRef.current
-      const doc = iframe.contentDocument || iframe.contentWindow.document
-      
-      // Enhanced HTML template with Tailwind CSS
-      const fullHTML = `
-<!DOCTYPE html>
+    // Using srcDoc instead of document manipulation for better security and compatibility
+    const fullHTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -143,10 +138,9 @@ export default function WebsiteBuilder() {
     </script>
 </body>
 </html>`
-      
-      doc.open()
-      doc.write(fullHTML)
-      doc.close()
+    
+    if (iframeRef.current) {
+      iframeRef.current.srcdoc = fullHTML
     }
   }
 
