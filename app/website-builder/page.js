@@ -34,8 +34,7 @@ export default function WebsiteBuilder() {
   const [error, setError] = useState('')
   const [previewMode, setPreviewMode] = useState('desktop')
   const [showCode, setShowCode] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const iframeRef = useRef(null)
+  const [previewSrcDoc, setPreviewSrcDoc] = useState('')
 
   const providers = [
     { id: 'openai', name: 'OpenAI GPT-4', placeholder: 'sk-...' },
