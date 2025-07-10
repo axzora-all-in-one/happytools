@@ -92,6 +92,9 @@ export default function WebsiteBuilder() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generated Website</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -99,6 +102,27 @@ export default function WebsiteBuilder() {
                     colors: {
                         primary: '#3b82f6',
                         secondary: '#64748b',
+                    },
+                    animation: {
+                        'gradient': 'gradient 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'gradient': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
                     }
                 }
             }
@@ -107,16 +131,27 @@ export default function WebsiteBuilder() {
     <style>
         body { margin: 0; padding: 0; }
         * { box-sizing: border-box; }
+        .glass { backdrop-filter: blur(16px) saturate(180%); }
+        .text-shadow { text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
-    ${data.code}
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        ${data.code}
+        
+        // Render the component
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
     <script>
         // Handle form submissions and links safely
         document.addEventListener('click', function(e) {
-            if (e.target.tagName === 'A' && e.target.href) {
+            if (e.target.tagName === 'A' && e.target.href && !e.target.href.startsWith('#')) {
                 e.preventDefault();
-                console.log('Link clicked:', e.target.href);
+                console.log('External link clicked:', e.target.href);
             }
         });
         
