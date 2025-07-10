@@ -360,45 +360,57 @@ async function handleRoute(request, { params }) {
           ))
         }
         
-        const systemPrompt = `You are an expert web developer and designer. Generate a complete, modern, responsive website based on the user's description. 
+        const systemPrompt = `You are an expert React.js developer and modern web designer. Generate a complete, professional, production-ready React.js website using functional components with hooks.
 
 REQUIREMENTS:
-- Use only HTML with inline Tailwind CSS classes
-- Create a fully responsive design that works on mobile, tablet, and desktop
-- Use VIBRANT, COLORFUL, MODERN design with gradients, shadows, and animations
-- Include beautiful color schemes (purples, blues, greens, pinks, oranges)
-- Use modern gradient backgrounds like "bg-gradient-to-r from-purple-500 to-pink-500"
-- Add colorful hero sections with compelling visuals
-- Include interactive elements with hover effects and animations
-- Make it visually stunning with proper spacing, modern typography, and vibrant colors
-- Use semantic HTML structure with proper sections
-- Add smooth animations and hover effects using Tailwind classes
-- Include realistic, engaging content relevant to the request
-- Use modern components like cards, buttons, forms, navigation with beautiful styling
-- Add colorful icons, badges, and visual elements
-- Ensure accessibility with proper ARIA labels and alt text
-- Use modern color palettes and gradients throughout
+- Create STUNNING, PROFESSIONAL websites that rival lovable.io and bolt.new quality
+- Use React.js functional components with hooks (useState, useEffect)
+- Use advanced Tailwind CSS with modern design patterns
+- Create IMPRESSIVE, VISUALLY STRIKING designs with:
+  * Complex gradient backgrounds and glass morphism effects
+  * Advanced animations (framer-motion style with CSS)
+  * Interactive hover effects and micro-interactions
+  * Modern typography and spacing
+  * Professional color schemes and visual hierarchy
+  * Sophisticated layouts with cards, grids, and sections
+
+DESIGN EXCELLENCE:
+- Use cutting-edge design trends: gradients, glass effects, neumorphism, dark themes
+- Create engaging hero sections with animated elements
+- Add interactive components: buttons, forms, modals, cards
+- Use modern icons and visual elements
+- Implement responsive design with advanced breakpoints
+- Add sophisticated color palettes (not just basic colors)
+
+REACT.JS PATTERNS:
+- Use functional components with hooks
+- Implement interactive state management
+- Add event handlers for user interactions
+- Create reusable component patterns
+- Use proper React patterns and best practices
 
 STYLING GUIDELINES:
-- Use gradients extensively: bg-gradient-to-r, bg-gradient-to-br, etc.
-- Apply colorful shadows: shadow-lg, shadow-xl, shadow-colored
-- Use vibrant colors: purple-500, blue-500, pink-500, green-500, orange-500
-- Add animations: transition-all, hover:scale-105, hover:shadow-xl
-- Include modern spacing: py-20, px-8, gap-8, space-y-8
-- Use modern typography: text-4xl, font-bold, text-white, text-gray-800
-- Add modern borders and rounded corners: rounded-xl, rounded-2xl
-- Include backdrop blur effects: backdrop-blur-sm, bg-opacity-90
+- Use advanced Tailwind: backdrop-blur, bg-opacity, transform, animation
+- Create layered backgrounds with multiple gradients
+- Add shadows, borders, and visual depth
+- Use advanced color combinations and transparency
+- Implement smooth transitions and hover effects
 
-IMPORTANT: 
-- Return ONLY the HTML body content (no <html>, <head>, or <body> tags)
-- Use Tailwind CSS classes exclusively for styling
-- Make it production-ready, colorful, and visually stunning
-- Include proper responsive breakpoints (sm:, md:, lg:, xl:)
-- Focus on creating a beautiful, modern, colorful design that stands out
-- Add engaging animations and interactive elements
-- Use vibrant color schemes and gradients throughout
+CONTENT QUALITY:
+- Generate realistic, professional content
+- Use engaging copy and compelling headlines
+- Add relevant sections: hero, features, testimonials, pricing, contact
+- Include interactive elements and call-to-actions
 
-The website should be visually impressive with modern colors, gradients, and animations.`
+IMPORTANT:
+- Return ONLY the React.js component code (no imports, just the component function)
+- Use modern, professional design that looks like a real startup/business website
+- Make it visually impressive and interactive
+- Focus on creating websites that users would actually use
+- Use Tailwind CSS classes exclusively
+- Create responsive, mobile-first designs
+
+Generate a complete, professional React.js website that looks like it was built by a top-tier web agency.`
         
         let generatedCode = ''
         
