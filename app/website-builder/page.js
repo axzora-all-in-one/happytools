@@ -263,53 +263,58 @@ export default function WebsiteBuilder() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Header */}
-      <div className="border-b border-white/10 bg-slate-900/50 backdrop-blur-lg">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                <Layout className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Website Builder</h1>
-                <p className="text-xs text-gray-300">AI-Powered Website Generator</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                Live Preview
-              </Badge>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setPreviewMode('mobile')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    previewMode === 'mobile' ? 'bg-white/20 text-white' : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <Smartphone className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setPreviewMode('tablet')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    previewMode === 'tablet' ? 'bg-white/20 text-white' : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <Tablet className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setPreviewMode('desktop')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    previewMode === 'desktop' ? 'bg-white/20 text-white' : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <Monitor className="w-4 h-4" />
-                </button>
+          {/* Header */}
+          <div className="border-b border-white/10 bg-slate-900/50 backdrop-blur-lg">
+            <div className="container mx-auto px-4 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                    <Layout className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-white">Website Builder</h1>
+                    <p className="text-xs text-gray-300">Professional React.js Generator</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    React.js Ready
+                  </Badge>
+                  <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
+                    <Zap className="w-3 h-3 mr-1" />
+                    AI-Powered
+                  </Badge>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setPreviewMode('mobile')}
+                      className={`p-2 rounded-lg transition-colors ${
+                        previewMode === 'mobile' ? 'bg-white/20 text-white' : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <Smartphone className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setPreviewMode('tablet')}
+                      className={`p-2 rounded-lg transition-colors ${
+                        previewMode === 'tablet' ? 'bg-white/20 text-white' : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <Tablet className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setPreviewMode('desktop')}
+                      className={`p-2 rounded-lg transition-colors ${
+                        previewMode === 'desktop' ? 'bg-white/20 text-white' : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <Monitor className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
       {/* Main Content */}
       <div className="flex h-[calc(100vh-80px)]">
