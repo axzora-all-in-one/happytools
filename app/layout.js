@@ -1,5 +1,6 @@
 import './globals.css'
 import { Plus_Jakarta_Sans } from 'next/font/google'
+import Link from 'next/link'
 import MobileNav from '@/components/MobileNav'
 
 const plusJakartaSans = Plus_Jakarta_Sans({ 
@@ -72,6 +73,7 @@ export default function RootLayout({ children }) {
                   </div>
                 </Link>
                 <div className="flex items-center space-x-6">
+                  {/* Desktop Navigation */}
                   <nav className="hidden md:flex items-center space-x-6">
                     <Link href="/" className="text-gray-300 hover:text-white transition-colors">
                       Home
@@ -83,15 +85,20 @@ export default function RootLayout({ children }) {
                       Categories
                     </Link>
                   </nav>
-                  <div className="flex items-center space-x-4">
-                    <div className="hidden md:flex items-center space-x-2 text-sm text-gray-300">
+                  
+                  {/* Desktop Status */}
+                  <div className="hidden lg:flex items-center space-x-4">
+                    <div className="flex items-center space-x-2 text-sm text-gray-300">
                       <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
                       <span>Daily Updates</span>
                     </div>
-                    <div className="text-sm text-gray-400 hidden lg:block">
+                    <div className="text-sm text-gray-400">
                       Making AI Discovery Happy
                     </div>
                   </div>
+                  
+                  {/* Mobile Navigation */}
+                  <MobileNav />
                 </div>
               </div>
             </div>
