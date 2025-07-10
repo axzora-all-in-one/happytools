@@ -21,7 +21,17 @@ import {
   Copy,
   Check,
   Play,
-  Settings
+  Settings,
+  TrendingUp,
+  DollarSign,
+  Heart,
+  Eye,
+  PenTool,
+  FileCheck,
+  User,
+  Send,
+  BookOpen,
+  Shield
 } from 'lucide-react'
 
 export default function AgentsPage() {
@@ -31,13 +41,150 @@ export default function AgentsPage() {
   const [copied, setCopied] = useState(false)
 
   const agents = [
+    // Communication & Email
+    {
+      id: 'intro-email',
+      name: 'Intro Email Generator',
+      description: 'Generate perfect introduction emails between two people',
+      icon: Mail,
+      color: 'from-blue-500 to-cyan-500',
+      category: 'Communication',
+      inputs: [
+        { name: 'person1', label: 'Person 1 Name', type: 'input', placeholder: 'John Smith' },
+        { name: 'person2', label: 'Person 2 Name', type: 'input', placeholder: 'Jane Doe' },
+        { name: 'purpose', label: 'Introduction Purpose', type: 'textarea', placeholder: 'Why are you introducing them?' },
+        { name: 'context', label: 'Context/Background', type: 'textarea', placeholder: 'Additional context about both people...' }
+      ],
+      apiRequired: false
+    },
+    {
+      id: 'follow-up-writer',
+      name: 'Follow-Up Writer',
+      description: 'Create professional follow-up emails for any situation',
+      icon: Send,
+      color: 'from-green-500 to-teal-500',
+      category: 'Communication',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'previousEmail', label: 'Previous Email/Conversation', type: 'textarea', placeholder: 'Paste the previous email or conversation...' },
+        { name: 'recipient', label: 'Recipient Name', type: 'input', placeholder: 'Who are you following up with?' },
+        { name: 'purpose', label: 'Follow-up Purpose', type: 'select', options: ['Check Status', 'Provide Update', 'Request Response', 'Schedule Meeting', 'Thank You'] }
+      ],
+      apiRequired: true
+    },
+    // Finance & Trading
+    {
+      id: 'stock-finder',
+      name: 'Most Traded Stocks',
+      description: 'Find the most actively traded stocks with real-time data',
+      icon: TrendingUp,
+      color: 'from-emerald-500 to-green-500',
+      category: 'Finance',
+      inputs: [
+        { name: 'apiKey', label: 'RapidAPI Key (Yahoo Finance)', type: 'password', placeholder: 'Your RapidAPI key for Yahoo Finance' },
+        { name: 'market', label: 'Market', type: 'select', options: ['US', 'NASDAQ', 'NYSE', 'Global'] },
+        { name: 'timeframe', label: 'Time Frame', type: 'select', options: ['Today', 'This Week', 'This Month'] },
+        { name: 'limit', label: 'Number of Stocks', type: 'select', options: ['5', '10', '20', '50'] }
+      ],
+      apiRequired: true
+    },
+    {
+      id: 'crypto-pulse',
+      name: 'Crypto Market Pulse',
+      description: 'Get daily crypto market trends and top gainers/losers',
+      icon: DollarSign,
+      color: 'from-yellow-500 to-orange-500',
+      category: 'Finance',
+      inputs: [
+        { name: 'focus', label: 'Market Focus', type: 'select', options: ['Top 10', 'Top 50', 'All Markets', 'Specific Coin'] },
+        { name: 'metric', label: 'Key Metric', type: 'select', options: ['Price Change', 'Volume', 'Market Cap', 'All Metrics'] },
+        { name: 'timeframe', label: 'Time Period', type: 'select', options: ['24h', '7d', '30d'] }
+      ],
+      apiRequired: false
+    },
+    // Learning & Content
+    {
+      id: 'ai-detector',
+      name: 'AI or Human Detector',
+      description: 'Analyze text to determine if it was written by AI or human',
+      icon: Eye,
+      color: 'from-purple-500 to-pink-500',
+      category: 'Content',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'text', label: 'Text to Analyze', type: 'textarea', placeholder: 'Paste the text you want to analyze...' }
+      ],
+      apiRequired: true
+    },
+    {
+      id: 'seo-writer',
+      name: 'SEO Blog Writer',
+      description: 'Generate SEO-optimized blog posts with keywords',
+      icon: PenTool,
+      color: 'from-indigo-500 to-purple-500',
+      category: 'Content',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'topic', label: 'Blog Topic', type: 'input', placeholder: 'Main topic for your blog post' },
+        { name: 'keywords', label: 'SEO Keywords', type: 'input', placeholder: 'keyword1, keyword2, keyword3' },
+        { name: 'length', label: 'Article Length', type: 'select', options: ['Short (500 words)', 'Medium (1000 words)', 'Long (1500+ words)'] },
+        { name: 'tone', label: 'Writing Tone', type: 'select', options: ['Professional', 'Conversational', 'Technical', 'Beginner-friendly'] }
+      ],
+      apiRequired: true
+    },
+    // Document Tools
+    {
+      id: 'pdf-explainer',
+      name: 'PDF Explainer',
+      description: 'Upload PDF and get summaries, explanations, or Q&A',
+      icon: FileText,
+      color: 'from-red-500 to-pink-500',
+      category: 'Documents',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'pdfText', label: 'PDF Content', type: 'textarea', placeholder: 'Copy and paste text from your PDF here...' },
+        { name: 'task', label: 'What do you want?', type: 'select', options: ['Summary', 'Key Points', 'Q&A', 'Explanation', 'Action Items'] }
+      ],
+      apiRequired: true
+    },
+    {
+      id: 'fine-print-checker',
+      name: 'Fine Print Checker',
+      description: 'Analyze contracts and policies for hidden clauses',
+      icon: Shield,
+      color: 'from-orange-500 to-red-500',
+      category: 'Documents',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'document', label: 'Contract/Policy Text', type: 'textarea', placeholder: 'Paste the contract or policy text here...' },
+        { name: 'focus', label: 'Focus Area', type: 'select', options: ['All Issues', 'Financial Terms', 'Cancellation Policy', 'Privacy Concerns', 'Liability'] }
+      ],
+      apiRequired: true
+    },
+    // Personal Growth
+    {
+      id: 'clara-coach',
+      name: 'Clara - Growth Coach',
+      description: 'Your personal AI coach for motivation and growth',
+      icon: Heart,
+      color: 'from-pink-500 to-rose-500',
+      category: 'Personal',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'situation', label: 'Current Situation', type: 'textarea', placeholder: 'Tell Clara what\'s going on in your life...' },
+        { name: 'mood', label: 'Current Mood', type: 'select', options: ['Motivated', 'Stressed', 'Confused', 'Excited', 'Overwhelmed', 'Confident'] },
+        { name: 'goal', label: 'What do you want help with?', type: 'select', options: ['Motivation', 'Decision Making', 'Goal Setting', 'Overcoming Obstacles', 'Building Confidence'] }
+      ],
+      apiRequired: true
+    },
+    // Original agents
     {
       id: 'text-summarizer',
       name: 'Text Summarizer',
       description: 'Summarize long articles, documents, or any text content',
       icon: FileText,
       color: 'from-blue-500 to-cyan-500',
-      category: 'Content',
+      category: 'Utility',
       inputs: [
         { name: 'text', label: 'Text to Summarize', type: 'textarea', placeholder: 'Paste your text here...' }
       ],
@@ -103,7 +250,7 @@ export default function AgentsPage() {
       description: 'Create engaging social media posts for any platform',
       icon: MessageSquare,
       color: 'from-pink-500 to-rose-500',
-      category: 'Marketing',
+      category: 'Content',
       inputs: [
         { name: 'platform', label: 'Platform', type: 'select', options: ['Twitter', 'LinkedIn', 'Instagram', 'Facebook'] },
         { name: 'topic', label: 'Topic', type: 'input', placeholder: 'What to post about?' },
@@ -131,7 +278,7 @@ export default function AgentsPage() {
       description: 'Analyze and interpret data patterns',
       icon: BarChart3,
       color: 'from-yellow-500 to-orange-500',
-      category: 'Analytics',
+      category: 'Utility',
       inputs: [
         { name: 'data', label: 'Data (CSV format)', type: 'textarea', placeholder: 'Paste your CSV data here...' },
         { name: 'question', label: 'What do you want to analyze?', type: 'input', placeholder: 'Find trends, patterns, insights...' }
@@ -140,7 +287,18 @@ export default function AgentsPage() {
     }
   ]
 
-  const categories = ['All', 'Content', 'Creative', 'Development', 'Communication', 'Marketing', 'Utility', 'Analytics']
+  const categories = [
+    'All', 
+    'Communication', 
+    'Finance', 
+    'Content', 
+    'Documents', 
+    'Personal', 
+    'Creative', 
+    'Development', 
+    'Utility'
+  ]
+  
   const [selectedCategory, setSelectedCategory] = useState('All')
 
   const filteredAgents = selectedCategory === 'All' 
@@ -225,7 +383,7 @@ export default function AgentsPage() {
                   : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
               }`}
             >
-              {category}
+              {category} {category !== 'All' && `(${agents.filter(a => a.category === category).length})`}
             </button>
           ))}
         </div>
