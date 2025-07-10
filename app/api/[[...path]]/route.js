@@ -337,6 +337,57 @@ async function handleRoute(request, { params }) {
       }));
     }
 
+    // AI Agents run endpoint - POST /api/agents/run
+    if (route === '/agents/run' && method === 'POST') {
+      try {
+        const body = await request.json()
+        const { agentId, inputs } = body
+        
+        let result = ''
+        
+        switch (agentId) {
+          case 'text-summarizer':
+            result = await runTextSummarizer(inputs.text)
+            break
+          case 'image-generator':
+            result = await runImageGenerator(inputs.apiKey, inputs.prompt)
+            break
+          case 'content-writer':
+            result = await runContentWriter(inputs.topic, inputs.tone, inputs.length)
+            break
+          case 'code-generator':
+            result = await runCodeGenerator(inputs.language, inputs.description)
+            break
+          case 'email-writer':
+            result = await runEmailWriter(inputs.purpose, inputs.recipient, inputs.context)
+            break
+          case 'social-media':
+            result = await runSocialMediaPost(inputs.platform, inputs.topic, inputs.style)
+            break
+          case 'translator':
+            result = await runTranslator(inputs.text, inputs.fromLang, inputs.toLang)
+            break
+          case 'data-analyzer':
+            result = await runDataAnalyzer(inputs.data, inputs.question)
+            break
+          default:
+            throw new Error('Unknown agent')
+        }
+        
+        return handleCORS(NextResponse.json({
+          success: true,
+          result: result
+        }))
+        
+      } catch (error) {
+        console.error('Error running agent:', error)
+        return handleCORS(NextResponse.json(
+          { error: `Failed to run agent: ${error.message}` },
+          { status: 500 }
+        ))
+      }
+    }
+
     // Status endpoints - POST /api/status
     if (route === '/status' && method === 'POST') {
       const body = await request.json()
