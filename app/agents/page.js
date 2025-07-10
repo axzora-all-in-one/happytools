@@ -31,7 +31,17 @@ import {
   User,
   Send,
   BookOpen,
-  Shield
+  Shield,
+  Brain,
+  Target,
+  Briefcase,
+  Search,
+  Zap,
+  Database,
+  Clock,
+  Users,
+  ChartBar,
+  Monitor
 } from 'lucide-react'
 
 export default function AgentsPage() {
@@ -41,7 +51,166 @@ export default function AgentsPage() {
   const [copied, setCopied] = useState(false)
 
   const agents = [
-    // Communication & Email
+    // Advanced AI Assistants
+    {
+      id: 'business-plan-generator',
+      name: 'Business Plan Generator',
+      description: 'Create comprehensive business plans with financial projections',
+      icon: Briefcase,
+      color: 'from-emerald-500 to-green-600',
+      category: 'Business',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'businessIdea', label: 'Business Idea', type: 'textarea', placeholder: 'Describe your business idea...' },
+        { name: 'industry', label: 'Industry', type: 'select', options: ['Technology', 'Healthcare', 'E-commerce', 'Education', 'Finance', 'Real Estate', 'Food & Beverage', 'Other'] },
+        { name: 'targetMarket', label: 'Target Market', type: 'input', placeholder: 'Who is your target audience?' },
+        { name: 'budget', label: 'Initial Budget', type: 'select', options: ['Under $10K', '$10K-$50K', '$50K-$100K', '$100K-$500K', 'Over $500K'] }
+      ],
+      apiRequired: true
+    },
+    {
+      id: 'competitor-analysis',
+      name: 'Competitor Analysis AI',
+      description: 'Analyze competitors and create strategic reports',
+      icon: Target,
+      color: 'from-red-500 to-pink-600',
+      category: 'Business',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'company', label: 'Your Company/Product', type: 'input', placeholder: 'Your company name or product' },
+        { name: 'competitors', label: 'Competitors', type: 'textarea', placeholder: 'List your main competitors (one per line)' },
+        { name: 'analysisType', label: 'Analysis Type', type: 'select', options: ['SWOT Analysis', 'Market Positioning', 'Feature Comparison', 'Pricing Strategy', 'Complete Analysis'] }
+      ],
+      apiRequired: true
+    },
+    {
+      id: 'meeting-summarizer',
+      name: 'Meeting Summarizer Pro',
+      description: 'Transform meeting transcripts into actionable summaries',
+      icon: Users,
+      color: 'from-blue-500 to-cyan-600',
+      category: 'Business',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'transcript', label: 'Meeting Transcript', type: 'textarea', placeholder: 'Paste your meeting transcript here...' },
+        { name: 'meetingType', label: 'Meeting Type', type: 'select', options: ['Team Standup', 'Client Call', 'Board Meeting', 'Project Review', 'Brainstorming', 'All Hands'] },
+        { name: 'outputFormat', label: 'Output Format', type: 'select', options: ['Executive Summary', 'Action Items', 'Full Summary', 'Key Decisions'] }
+      ],
+      apiRequired: true
+    },
+    {
+      id: 'sales-email-sequences',
+      name: 'Sales Email Sequences',
+      description: 'Generate complete sales email campaigns',
+      icon: Mail,
+      color: 'from-purple-500 to-indigo-600',
+      category: 'Sales',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'product', label: 'Product/Service', type: 'input', placeholder: 'What are you selling?' },
+        { name: 'targetAudience', label: 'Target Audience', type: 'input', placeholder: 'Who are you targeting?' },
+        { name: 'sequenceType', label: 'Sequence Type', type: 'select', options: ['Cold Outreach', 'Lead Nurturing', 'Customer Onboarding', 'Re-engagement', 'Upsell Campaign'] },
+        { name: 'emailCount', label: 'Number of Emails', type: 'select', options: ['3 emails', '5 emails', '7 emails', '10 emails'] }
+      ],
+      apiRequired: true
+    },
+    {
+      id: 'market-research-ai',
+      name: 'Market Research AI',
+      description: 'Comprehensive market analysis and insights',
+      icon: ChartBar,
+      color: 'from-orange-500 to-red-600',
+      category: 'Research',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'market', label: 'Market/Industry', type: 'input', placeholder: 'e.g., AI SaaS tools, Electric vehicles' },
+        { name: 'researchType', label: 'Research Type', type: 'select', options: ['Market Size', 'Trends Analysis', 'Customer Segmentation', 'PEST Analysis', 'Complete Research'] },
+        { name: 'geography', label: 'Geographic Focus', type: 'select', options: ['Global', 'North America', 'Europe', 'Asia Pacific', 'Specific Country'] },
+        { name: 'timeframe', label: 'Time Frame', type: 'select', options: ['Current', '1 Year Forecast', '3 Year Forecast', '5 Year Forecast'] }
+      ],
+      apiRequired: true
+    },
+    {
+      id: 'user-persona-generator',
+      name: 'User Persona Generator',
+      description: 'Create detailed user personas for product development',
+      icon: User,
+      color: 'from-teal-500 to-green-600',
+      category: 'Product',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'product', label: 'Product/Service', type: 'input', placeholder: 'Describe your product or service' },
+        { name: 'industry', label: 'Industry', type: 'select', options: ['B2B Software', 'E-commerce', 'Healthcare', 'Education', 'Finance', 'Gaming', 'Social Media', 'Other'] },
+        { name: 'personaCount', label: 'Number of Personas', type: 'select', options: ['1 persona', '2 personas', '3 personas', '5 personas'] },
+        { name: 'includeData', label: 'Include', type: 'select', options: ['Basic Info', 'Full Profile', 'Behavioral Insights', 'Pain Points & Goals'] }
+      ],
+      apiRequired: true
+    },
+    {
+      id: 'financial-projections',
+      name: 'Financial Projections AI',
+      description: 'Generate detailed financial forecasts and budgets',
+      icon: DollarSign,
+      color: 'from-green-500 to-emerald-600',
+      category: 'Finance',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'businessType', label: 'Business Type', type: 'select', options: ['SaaS', 'E-commerce', 'Service Business', 'Manufacturing', 'Retail', 'Consulting', 'Startup', 'Other'] },
+        { name: 'revenue', label: 'Current/Expected Monthly Revenue', type: 'select', options: ['$0-$1K', '$1K-$10K', '$10K-$50K', '$50K-$100K', '$100K+', 'Not launched yet'] },
+        { name: 'projectionPeriod', label: 'Projection Period', type: 'select', options: ['6 months', '1 year', '2 years', '3 years', '5 years'] },
+        { name: 'includeScenarios', label: 'Include Scenarios', type: 'select', options: ['Conservative only', 'Conservative & Optimistic', 'Conservative, Realistic & Optimistic'] }
+      ],
+      apiRequired: true
+    },
+    {
+      id: 'code-reviewer',
+      name: 'Code Review AI',
+      description: 'Advanced code review with security and optimization suggestions',
+      icon: Code,
+      color: 'from-indigo-500 to-purple-600',
+      category: 'Development',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'code', label: 'Code to Review', type: 'textarea', placeholder: 'Paste your code here...' },
+        { name: 'language', label: 'Programming Language', type: 'select', options: ['JavaScript', 'Python', 'Java', 'C#', 'Go', 'Rust', 'TypeScript', 'PHP', 'Ruby'] },
+        { name: 'reviewFocus', label: 'Review Focus', type: 'select', options: ['Security Issues', 'Performance Optimization', 'Code Quality', 'Best Practices', 'Complete Review'] },
+        { name: 'severity', label: 'Issue Severity', type: 'select', options: ['All Issues', 'Critical & High', 'Critical Only'] }
+      ],
+      apiRequired: true
+    },
+    {
+      id: 'seo-content-optimizer',
+      name: 'SEO Content Optimizer',
+      description: 'Optimize content for search engines with AI analysis',
+      icon: Search,
+      color: 'from-yellow-500 to-orange-600',
+      category: 'Marketing',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'content', label: 'Content to Optimize', type: 'textarea', placeholder: 'Paste your content here...' },
+        { name: 'targetKeyword', label: 'Target Keyword', type: 'input', placeholder: 'Main keyword to rank for' },
+        { name: 'contentType', label: 'Content Type', type: 'select', options: ['Blog Post', 'Product Page', 'Landing Page', 'About Page', 'Category Page'] },
+        { name: 'optimizationLevel', label: 'Optimization Level', type: 'select', options: ['Basic SEO', 'Advanced SEO', 'Technical SEO', 'Complete Analysis'] }
+      ],
+      apiRequired: true
+    },
+    {
+      id: 'automated-testing-generator',
+      name: 'Test Case Generator',
+      description: 'Generate comprehensive test cases for software applications',
+      icon: Monitor,
+      color: 'from-cyan-500 to-blue-600',
+      category: 'Development',
+      inputs: [
+        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
+        { name: 'feature', label: 'Feature/Function to Test', type: 'textarea', placeholder: 'Describe the feature or function you want to test...' },
+        { name: 'testType', label: 'Test Type', type: 'select', options: ['Unit Tests', 'Integration Tests', 'E2E Tests', 'API Tests', 'Performance Tests', 'Security Tests'] },
+        { name: 'framework', label: 'Testing Framework', type: 'select', options: ['Jest', 'Cypress', 'Selenium', 'Playwright', 'JUnit', 'PyTest', 'RSpec', 'Other'] },
+        { name: 'complexity', label: 'Test Complexity', type: 'select', options: ['Basic', 'Intermediate', 'Advanced', 'Edge Cases Only'] }
+      ],
+      apiRequired: true
+    },
+    // Original simplified agents
     {
       id: 'intro-email',
       name: 'Intro Email Generator',
@@ -58,22 +227,6 @@ export default function AgentsPage() {
       apiRequired: false
     },
     {
-      id: 'follow-up-writer',
-      name: 'Follow-Up Writer',
-      description: 'Create professional follow-up emails for any situation',
-      icon: Send,
-      color: 'from-green-500 to-teal-500',
-      category: 'Communication',
-      inputs: [
-        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
-        { name: 'previousEmail', label: 'Previous Email/Conversation', type: 'textarea', placeholder: 'Paste the previous email or conversation...' },
-        { name: 'recipient', label: 'Recipient Name', type: 'input', placeholder: 'Who are you following up with?' },
-        { name: 'purpose', label: 'Follow-up Purpose', type: 'select', options: ['Check Status', 'Provide Update', 'Request Response', 'Schedule Meeting', 'Thank You'] }
-      ],
-      apiRequired: true
-    },
-    // Finance & Trading
-    {
       id: 'stock-finder',
       name: 'Most Traded Stocks',
       description: 'Find the most actively traded stocks with real-time data',
@@ -81,12 +234,11 @@ export default function AgentsPage() {
       color: 'from-emerald-500 to-green-500',
       category: 'Finance',
       inputs: [
-        { name: 'apiKey', label: 'RapidAPI Key (Yahoo Finance)', type: 'password', placeholder: 'Your RapidAPI key for Yahoo Finance' },
         { name: 'market', label: 'Market', type: 'select', options: ['US', 'NASDAQ', 'NYSE', 'Global'] },
         { name: 'timeframe', label: 'Time Frame', type: 'select', options: ['Today', 'This Week', 'This Month'] },
         { name: 'limit', label: 'Number of Stocks', type: 'select', options: ['5', '10', '20', '50'] }
       ],
-      apiRequired: true
+      apiRequired: false
     },
     {
       id: 'crypto-pulse',
@@ -102,82 +254,6 @@ export default function AgentsPage() {
       ],
       apiRequired: false
     },
-    // Learning & Content
-    {
-      id: 'ai-detector',
-      name: 'AI or Human Detector',
-      description: 'Analyze text to determine if it was written by AI or human',
-      icon: Eye,
-      color: 'from-purple-500 to-pink-500',
-      category: 'Content',
-      inputs: [
-        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
-        { name: 'text', label: 'Text to Analyze', type: 'textarea', placeholder: 'Paste the text you want to analyze...' }
-      ],
-      apiRequired: true
-    },
-    {
-      id: 'seo-writer',
-      name: 'SEO Blog Writer',
-      description: 'Generate SEO-optimized blog posts with keywords',
-      icon: PenTool,
-      color: 'from-indigo-500 to-purple-500',
-      category: 'Content',
-      inputs: [
-        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
-        { name: 'topic', label: 'Blog Topic', type: 'input', placeholder: 'Main topic for your blog post' },
-        { name: 'keywords', label: 'SEO Keywords', type: 'input', placeholder: 'keyword1, keyword2, keyword3' },
-        { name: 'length', label: 'Article Length', type: 'select', options: ['Short (500 words)', 'Medium (1000 words)', 'Long (1500+ words)'] },
-        { name: 'tone', label: 'Writing Tone', type: 'select', options: ['Professional', 'Conversational', 'Technical', 'Beginner-friendly'] }
-      ],
-      apiRequired: true
-    },
-    // Document Tools
-    {
-      id: 'pdf-explainer',
-      name: 'PDF Explainer',
-      description: 'Upload PDF and get summaries, explanations, or Q&A',
-      icon: FileText,
-      color: 'from-red-500 to-pink-500',
-      category: 'Documents',
-      inputs: [
-        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
-        { name: 'pdfText', label: 'PDF Content', type: 'textarea', placeholder: 'Copy and paste text from your PDF here...' },
-        { name: 'task', label: 'What do you want?', type: 'select', options: ['Summary', 'Key Points', 'Q&A', 'Explanation', 'Action Items'] }
-      ],
-      apiRequired: true
-    },
-    {
-      id: 'fine-print-checker',
-      name: 'Fine Print Checker',
-      description: 'Analyze contracts and policies for hidden clauses',
-      icon: Shield,
-      color: 'from-orange-500 to-red-500',
-      category: 'Documents',
-      inputs: [
-        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
-        { name: 'document', label: 'Contract/Policy Text', type: 'textarea', placeholder: 'Paste the contract or policy text here...' },
-        { name: 'focus', label: 'Focus Area', type: 'select', options: ['All Issues', 'Financial Terms', 'Cancellation Policy', 'Privacy Concerns', 'Liability'] }
-      ],
-      apiRequired: true
-    },
-    // Personal Growth
-    {
-      id: 'clara-coach',
-      name: 'Clara - Growth Coach',
-      description: 'Your personal AI coach for motivation and growth',
-      icon: Heart,
-      color: 'from-pink-500 to-rose-500',
-      category: 'Personal',
-      inputs: [
-        { name: 'apiKey', label: 'OpenAI API Key', type: 'password', placeholder: 'sk-...' },
-        { name: 'situation', label: 'Current Situation', type: 'textarea', placeholder: 'Tell Clara what\'s going on in your life...' },
-        { name: 'mood', label: 'Current Mood', type: 'select', options: ['Motivated', 'Stressed', 'Confused', 'Excited', 'Overwhelmed', 'Confident'] },
-        { name: 'goal', label: 'What do you want help with?', type: 'select', options: ['Motivation', 'Decision Making', 'Goal Setting', 'Overcoming Obstacles', 'Building Confidence'] }
-      ],
-      apiRequired: true
-    },
-    // Original agents
     {
       id: 'text-summarizer',
       name: 'Text Summarizer',
@@ -202,100 +278,20 @@ export default function AgentsPage() {
         { name: 'prompt', label: 'Image Description', type: 'textarea', placeholder: 'A beautiful sunset over mountains...' }
       ],
       apiRequired: true
-    },
-    {
-      id: 'content-writer',
-      name: 'Content Writer',
-      description: 'Generate blog posts, articles, and marketing copy',
-      icon: Bot,
-      color: 'from-green-500 to-teal-500',
-      category: 'Content',
-      inputs: [
-        { name: 'topic', label: 'Topic', type: 'input', placeholder: 'Write about...' },
-        { name: 'tone', label: 'Tone', type: 'select', options: ['Professional', 'Casual', 'Friendly', 'Formal'] },
-        { name: 'length', label: 'Length', type: 'select', options: ['Short', 'Medium', 'Long'] }
-      ],
-      apiRequired: false
-    },
-    {
-      id: 'code-generator',
-      name: 'Code Generator',
-      description: 'Generate code snippets in various programming languages',
-      icon: Code,
-      color: 'from-orange-500 to-red-500',
-      category: 'Development',
-      inputs: [
-        { name: 'language', label: 'Programming Language', type: 'select', options: ['Python', 'JavaScript', 'Java', 'C++', 'Go'] },
-        { name: 'description', label: 'What should the code do?', type: 'textarea', placeholder: 'Create a function that...' }
-      ],
-      apiRequired: false
-    },
-    {
-      id: 'email-writer',
-      name: 'Email Writer',
-      description: 'Write professional emails for any purpose',
-      icon: Mail,
-      color: 'from-indigo-500 to-purple-500',
-      category: 'Communication',
-      inputs: [
-        { name: 'purpose', label: 'Email Purpose', type: 'select', options: ['Business', 'Follow-up', 'Apology', 'Request', 'Thank You'] },
-        { name: 'recipient', label: 'Recipient', type: 'input', placeholder: 'Who are you writing to?' },
-        { name: 'context', label: 'Context', type: 'textarea', placeholder: 'Brief context about the email...' }
-      ],
-      apiRequired: false
-    },
-    {
-      id: 'social-media',
-      name: 'Social Media Post',
-      description: 'Create engaging social media posts for any platform',
-      icon: MessageSquare,
-      color: 'from-pink-500 to-rose-500',
-      category: 'Content',
-      inputs: [
-        { name: 'platform', label: 'Platform', type: 'select', options: ['Twitter', 'LinkedIn', 'Instagram', 'Facebook'] },
-        { name: 'topic', label: 'Topic', type: 'input', placeholder: 'What to post about?' },
-        { name: 'style', label: 'Style', type: 'select', options: ['Professional', 'Casual', 'Inspirational', 'Funny'] }
-      ],
-      apiRequired: false
-    },
-    {
-      id: 'translator',
-      name: 'Language Translator',
-      description: 'Translate text between different languages',
-      icon: Globe,
-      color: 'from-teal-500 to-blue-500',
-      category: 'Utility',
-      inputs: [
-        { name: 'text', label: 'Text to Translate', type: 'textarea', placeholder: 'Enter text to translate...' },
-        { name: 'fromLang', label: 'From Language', type: 'select', options: ['English', 'Spanish', 'French', 'German', 'Chinese', 'Japanese'] },
-        { name: 'toLang', label: 'To Language', type: 'select', options: ['English', 'Spanish', 'French', 'German', 'Chinese', 'Japanese'] }
-      ],
-      apiRequired: false
-    },
-    {
-      id: 'data-analyzer',
-      name: 'Data Analyzer',
-      description: 'Analyze and interpret data patterns',
-      icon: BarChart3,
-      color: 'from-yellow-500 to-orange-500',
-      category: 'Utility',
-      inputs: [
-        { name: 'data', label: 'Data (CSV format)', type: 'textarea', placeholder: 'Paste your CSV data here...' },
-        { name: 'question', label: 'What do you want to analyze?', type: 'input', placeholder: 'Find trends, patterns, insights...' }
-      ],
-      apiRequired: false
     }
   ]
 
   const categories = [
     'All', 
-    'Communication', 
+    'Business', 
+    'Sales', 
+    'Research', 
+    'Product', 
     'Finance', 
-    'Content', 
-    'Documents', 
-    'Personal', 
-    'Creative', 
     'Development', 
+    'Marketing',
+    'Communication', 
+    'Creative', 
     'Utility'
   ]
   
@@ -356,18 +352,18 @@ export default function AgentsPage() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center bg-white/10 backdrop-blur-lg rounded-full px-6 py-3 mb-8 border border-white/20">
             <Bot className="w-5 h-5 text-white mr-2" />
-            <span className="text-white font-semibold">AI Agents</span>
+            <span className="text-white font-semibold">Professional AI Agents</span>
           </div>
           
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            No-Code{' '}
+            Advanced{' '}
             <span className="bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 bg-clip-text text-transparent">
               AI Agents
             </span>
           </h1>
           
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Simple AI agents that work with just your inputs. No coding required - just add your details and let AI do the magic!
+            Professional-grade AI agents that solve real business problems. Add your API key and get enterprise-level results instantly!
           </p>
         </div>
 
