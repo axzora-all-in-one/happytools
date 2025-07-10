@@ -400,7 +400,13 @@ export default function WebsiteBuilder() {
               </div>
             ) : (
               <div className="h-full flex items-center justify-center bg-gray-100">
-                {generatedCode ? (
+                {loading ? (
+                  <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-purple-600 font-medium text-lg">Generating your beautiful website...</p>
+                    <p className="text-gray-500 text-sm mt-2">Creating vibrant design with AI</p>
+                  </div>
+                ) : generatedCode ? (
                   <div 
                     className="h-full bg-white shadow-lg transition-all duration-300" 
                     style={{ width: getPreviewWidth() }}
