@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
-HappyTools AI Tools Discovery Platform - Enhanced Backend Testing
-Tests all new features including AITools.fyi scraper, enhanced filtering, and new endpoints
+HappyTools Backend Testing Suite
+Tests both AI Tools Discovery Platform and AI Agents functionality
+- AI Tools Discovery Platform: Enhanced filtering, AITools.fyi scraper, new endpoints
+- AI Agents: 8 different AI agents with comprehensive input validation
 """
 
 import requests
