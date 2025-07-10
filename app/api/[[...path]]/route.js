@@ -180,11 +180,11 @@ async function handleRoute(request, { params }) {
       }
     }
 
-    // AI Tools sync endpoint - POST /api/ai-tools/sync-aitools (Enhanced AITools.fyi)
+    // AI Tools sync endpoint - POST /api/ai-tools/sync-aitools (Targeted AITools.fyi)
     if (route === '/ai-tools/sync-aitools' && method === 'POST') {
       try {
-        const scraper = new EnhancedAiToolsScraper();
-        const scrapedTools = await scraper.scrapeAllCategories(5); // 5 tools per category
+        const scraper = new TargetedAiToolsScraper();
+        const scrapedTools = await scraper.scrapeAllTargetPages();
         
         let syncedCount = 0;
         
@@ -213,16 +213,16 @@ async function handleRoute(request, { params }) {
         }
         
         return handleCORS(NextResponse.json({
-          message: `Successfully synced ${syncedCount} new AI tools from all categories + Google trending`,
+          message: `Successfully synced ${syncedCount} new AI tools from targeted pages`,
           synced: syncedCount,
           total_found: scrapedTools.length,
-          categories_scraped: scraper.categories.length
+          pages_scraped: 20
         }));
         
       } catch (error) {
-        console.error('Error syncing enhanced AI tools:', error);
+        console.error('Error syncing targeted AI tools:', error);
         return handleCORS(NextResponse.json(
-          { error: 'Failed to sync AI tools from enhanced sources' },
+          { error: 'Failed to sync AI tools from targeted sources' },
           { status: 500 }
         ));
       }
