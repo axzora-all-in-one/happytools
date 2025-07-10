@@ -450,7 +450,7 @@ Generate a complete, professional React.js website that looks like it was built 
               'anthropic-version': '2023-06-01',
             },
             body: JSON.stringify({
-              model: 'claude-3-sonnet-20240229',
+              model: 'claude-3-5-sonnet-20241022',
               max_tokens: 4000,
               system: systemPrompt,
               messages: [
@@ -468,7 +468,7 @@ Generate a complete, professional React.js website that looks like it was built 
           generatedCode = data.content[0].text
           
         } else if (provider === 'gemini') {
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
