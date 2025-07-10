@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { NextResponse } from 'next/server'
 import { getClient } from '@/lib/apollo-client'
 import { GET_AI_TOOLS, SEARCH_AI_TOOLS, isAITool } from '@/lib/producthunt'
-import EnhancedAiToolsScraper from '@/lib/scrapers/enhanced-aitools-scraper'
+import TargetedAiToolsScraper from '@/lib/scrapers/targeted-aitools-scraper'
 
 // MongoDB connection
 let client
