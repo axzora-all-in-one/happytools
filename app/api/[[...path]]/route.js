@@ -338,6 +338,201 @@ async function handleRoute(request, { params }) {
       }));
     }
 
+    // Website Builder generation endpoint - POST /api/website-builder/generate
+    if (route === '/website-builder/generate' && method === 'POST') {
+      try {
+        const body = await request.json()
+        const { provider, apiKey, prompt } = body
+        
+        if (!provider || !apiKey || !prompt) {
+          return handleCORS(NextResponse.json(
+            { error: 'Provider, API key, and prompt are required' },
+            { status: 400 }
+          ))
+        }
+        
+        // Validate provider
+        const validProviders = ['openai', 'claude', 'gemini']
+        if (!validProviders.includes(provider)) {
+          return handleCORS(NextResponse.json(
+            { error: 'Invalid provider. Must be one of: openai, claude, gemini' },
+            { status: 400 }
+          ))
+        }
+        
+        const systemPrompt = `You are an expert web developer and designer. Generate a complete, modern, responsive website based on the user's description. 
+
+REQUIREMENTS:
+- Use only HTML with inline Tailwind CSS classes
+- Create a fully responsive design that works on mobile, tablet, and desktop
+- Use modern design principles with gradients, shadows, and animations
+- Include interactive elements where appropriate
+- Make it visually appealing with proper spacing, typography, and colors
+- Use semantic HTML structure
+- Add smooth animations and hover effects using Tailwind
+- Include realistic placeholder content relevant to the request
+- Ensure accessibility with proper ARIA labels and alt text
+
+IMPORTANT: 
+- Return ONLY the HTML body content (no <html>, <head>, or <body> tags)
+- Use Tailwind CSS classes exclusively for styling
+- Make it production-ready and polished
+- Include proper responsive breakpoints (sm:, md:, lg:, xl:)
+- Use modern components like cards, buttons, forms, navigation
+- Add subtle animations with transition and transform classes
+
+The website should be complete and ready to use immediately.`
+        
+        let generatedCode = ''
+        
+        // Generate code based on provider
+        if (provider === 'openai') {
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'gpt-4',
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: prompt }
+              ],
+              max_tokens: 4000,
+              temperature: 0.7,
+            }),
+          })
+          
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error?.message || 'OpenAI API error')
+          }
+          
+          const data = await response.json()
+          generatedCode = data.choices[0].message.content
+          
+        } else if (provider === 'claude') {
+          const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'x-api-key': apiKey,
+              'Content-Type': 'application/json',
+              'anthropic-version': '2023-06-01',
+            },
+            body: JSON.stringify({
+              model: 'claude-3-sonnet-20240229',
+              max_tokens: 4000,
+              system: systemPrompt,
+              messages: [
+                { role: 'user', content: prompt }
+              ],
+            }),
+          })
+          
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error?.message || 'Claude API error')
+          }
+          
+          const data = await response.json()
+          generatedCode = data.content[0].text
+          
+        } else if (provider === 'gemini') {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    { text: `${systemPrompt}\n\nUser request: ${prompt}` }
+                  ]
+                }
+              ],
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 4000,
+              },
+            }),
+          })
+          
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error?.message || 'Gemini API error')
+          }
+          
+          const data = await response.json()
+          generatedCode = data.candidates[0].content.parts[0].text
+        }
+        
+        // Clean up the generated code
+        let cleanCode = generatedCode.replace(/```html\n?/g, '').replace(/```\n?$/g, '').trim()
+        
+        // Extract body content if full HTML is provided
+        const bodyMatch = cleanCode.match(/<body[^>]*>([\s\S]*)<\/body>/i)
+        if (bodyMatch) {
+          cleanCode = bodyMatch[1].trim()
+        }
+        
+        // Remove html, head, and body tags if they exist
+        cleanCode = cleanCode.replace(/<\/?html[^>]*>/gi, '')
+        cleanCode = cleanCode.replace(/<\/?head[^>]*>/gi, '')
+        cleanCode = cleanCode.replace(/<\/?body[^>]*>/gi, '')
+        cleanCode = cleanCode.trim()
+        
+        // Basic security validation
+        const dangerousPatterns = [
+          /<script[^>]*>(?!.*tailwind).*<\/script>/gi,
+          /<iframe[^>]*src=["'][^"']*(?!data:)[^"']*["']/gi,
+          /javascript:/gi,
+          /on\w+\s*=/gi
+        ]
+        
+        for (const pattern of dangerousPatterns) {
+          if (pattern.test(cleanCode)) {
+            return handleCORS(NextResponse.json(
+              { error: 'Generated code contains potentially unsafe content' },
+              { status: 400 }
+            ))
+          }
+        }
+        
+        // Save generated website to database
+        const websiteRecord = {
+          id: uuidv4(),
+          prompt: prompt,
+          provider: provider,
+          generated_code: cleanCode,
+          code_length: cleanCode.length,
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+        
+        await db.collection('generated_websites').insertOne(websiteRecord)
+        
+        return handleCORS(NextResponse.json({
+          success: true,
+          code: cleanCode,
+          metadata: {
+            provider: provider,
+            code_length: cleanCode.length,
+            generated_at: new Date().toISOString(),
+            website_id: websiteRecord.id
+          }
+        }))
+        
+      } catch (error) {
+        console.error('Error generating website:', error)
+        return handleCORS(NextResponse.json(
+          { error: error.message || 'Failed to generate website' },
+          { status: 500 }
+        ))
+      }
+    }
+
     // Chatbot creation endpoint - POST /api/chatbot/create
     if (route === '/chatbot/create' && method === 'POST') {
       try {
