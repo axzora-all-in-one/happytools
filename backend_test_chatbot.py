@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://72a54ba1-07cf-4ab8-897f-ab6090b9679b.preview.emergentagent.com"
+BASE_URL = "https://5a5ec5e8-53c8-414a-b9f3-a129d031fec1.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class ChatbotBuilderTester:

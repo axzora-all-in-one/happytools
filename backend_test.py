@@ -7,7 +7,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://72a54ba1-07cf-4ab8-897f-ab6090b9679b.preview.emergentagent.com/api"
+BASE_URL = "https://5a5ec5e8-53c8-414a-b9f3-a129d031fec1.preview.emergentagent.com/api"
 HEADERS = {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
