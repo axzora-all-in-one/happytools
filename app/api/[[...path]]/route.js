@@ -365,23 +365,40 @@ async function handleRoute(request, { params }) {
 REQUIREMENTS:
 - Use only HTML with inline Tailwind CSS classes
 - Create a fully responsive design that works on mobile, tablet, and desktop
-- Use modern design principles with gradients, shadows, and animations
-- Include interactive elements where appropriate
-- Make it visually appealing with proper spacing, typography, and colors
-- Use semantic HTML structure
-- Add smooth animations and hover effects using Tailwind
-- Include realistic placeholder content relevant to the request
+- Use VIBRANT, COLORFUL, MODERN design with gradients, shadows, and animations
+- Include beautiful color schemes (purples, blues, greens, pinks, oranges)
+- Use modern gradient backgrounds like "bg-gradient-to-r from-purple-500 to-pink-500"
+- Add colorful hero sections with compelling visuals
+- Include interactive elements with hover effects and animations
+- Make it visually stunning with proper spacing, modern typography, and vibrant colors
+- Use semantic HTML structure with proper sections
+- Add smooth animations and hover effects using Tailwind classes
+- Include realistic, engaging content relevant to the request
+- Use modern components like cards, buttons, forms, navigation with beautiful styling
+- Add colorful icons, badges, and visual elements
 - Ensure accessibility with proper ARIA labels and alt text
+- Use modern color palettes and gradients throughout
+
+STYLING GUIDELINES:
+- Use gradients extensively: bg-gradient-to-r, bg-gradient-to-br, etc.
+- Apply colorful shadows: shadow-lg, shadow-xl, shadow-colored
+- Use vibrant colors: purple-500, blue-500, pink-500, green-500, orange-500
+- Add animations: transition-all, hover:scale-105, hover:shadow-xl
+- Include modern spacing: py-20, px-8, gap-8, space-y-8
+- Use modern typography: text-4xl, font-bold, text-white, text-gray-800
+- Add modern borders and rounded corners: rounded-xl, rounded-2xl
+- Include backdrop blur effects: backdrop-blur-sm, bg-opacity-90
 
 IMPORTANT: 
 - Return ONLY the HTML body content (no <html>, <head>, or <body> tags)
 - Use Tailwind CSS classes exclusively for styling
-- Make it production-ready and polished
+- Make it production-ready, colorful, and visually stunning
 - Include proper responsive breakpoints (sm:, md:, lg:, xl:)
-- Use modern components like cards, buttons, forms, navigation
-- Add subtle animations with transition and transform classes
+- Focus on creating a beautiful, modern, colorful design that stands out
+- Add engaging animations and interactive elements
+- Use vibrant color schemes and gradients throughout
 
-The website should be complete and ready to use immediately.`
+The website should be visually impressive with modern colors, gradients, and animations.`
         
         let generatedCode = ''
         
