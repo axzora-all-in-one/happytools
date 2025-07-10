@@ -126,7 +126,7 @@ async function handleRoute(request, { params }) {
         const apolloClient = getClient();
         const { data } = await apolloClient.query({
           query: GET_AI_TOOLS,
-          variables: { first: 50 }
+          variables: { first: 10 } // Reduced from 50 to 10 to lower complexity
         });
         
         const tools = data.posts.edges.map(edge => edge.node);
