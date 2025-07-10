@@ -360,19 +360,12 @@ async function handleRoute(request, { params }) {
           ))
         }
         
-        const systemPrompt = `You are an expert React.js developer and modern web designer. Generate a complete, professional, production-ready React.js website using functional components with hooks.
-
-CRITICAL INSTRUCTIONS:
-- Return ONLY the React.js component code - NO explanations, NO markdown, NO code blocks
-- Do NOT include any text before or after the code
-- Do NOT wrap in \`\`\`jsx or \`\`\`javascript 
-- Start directly with the component function
-- End with the component export
+        const systemPrompt = `You are an expert frontend developer and modern web designer. Generate a complete, professional, production-ready website using HTML, Bootstrap CSS, and modern design patterns.
 
 REQUIREMENTS:
 - Create STUNNING, PROFESSIONAL websites that rival lovable.io and bolt.new quality
-- Use React.js functional components with hooks (useState, useEffect)
-- Use advanced Tailwind CSS with modern design patterns
+- Use HTML5 with Bootstrap 5 for responsive layouts
+- Use advanced CSS with modern design patterns
 - Create IMPRESSIVE, VISUALLY STRIKING designs with:
   * Complex gradient backgrounds and glass morphism effects
   * Advanced animations and micro-interactions
@@ -385,39 +378,41 @@ DESIGN EXCELLENCE:
 - Use cutting-edge design trends: gradients, glass effects, modern UI patterns
 - Create engaging hero sections with animated elements
 - Add interactive components: buttons, forms, cards with hover effects
-- Use modern icons and visual elements
-- Implement responsive design with advanced breakpoints
+- Use modern icons and visual elements (Font Awesome, Bootstrap Icons)
+- Implement responsive design with Bootstrap breakpoints
 - Add sophisticated color palettes and visual depth
 
-REACT.JS PATTERNS:
-- Use functional components with hooks
-- Implement interactive state management with useState
-- Add event handlers for user interactions
-- Create reusable component patterns
-- Use proper React patterns and best practices
+MODERN PATTERNS:
+- Component-like structure with sections and cards
+- Interactive state management with vanilla JavaScript
+- Smooth animations using CSS transitions and transforms
+- Modern hover effects and micro-interactions
+- Professional navigation and layout patterns
 
 STYLING GUIDELINES:
-- Use advanced Tailwind: backdrop-blur, bg-opacity, transform, animation
+- Use Bootstrap 5 classes for layout and components
+- Add custom CSS for advanced effects: backdrop-filter, gradients, animations
 - Create layered backgrounds with multiple gradients
 - Add shadows, borders, and visual depth
 - Use advanced color combinations and transparency
 - Implement smooth transitions and hover effects
 
-COMPONENT STRUCTURE:
-- Create a main component function (name it App)
-- Use multiple nested components for organization
-- Include proper state management
-- Add realistic, professional content
-- Export the component as default
+STRUCTURE:
+- Hero section with compelling headline and call-to-action
+- Feature sections with cards and icons
+- Testimonials, pricing, or portfolio sections as relevant
+- Modern footer with links and contact info
+- Navigation bar with smooth scrolling
 
 IMPORTANT OUTPUT FORMAT:
-- Return ONLY the React component code
-- NO explanations, comments, or markdown
-- Start with: const App = () => {
-- End with: export default App;
+- Return ONLY the HTML body content (no <html>, <head>, or <body> tags)
+- Use Bootstrap 5 classes and custom CSS
+- Include Font Awesome icons and modern styling
 - Make it production-ready and visually stunning
+- Focus on vibrant colors, gradients, and modern design
+- Create responsive, mobile-first designs
 
-Generate a complete, professional React.js website component that looks like it was built by a top-tier web agency.`
+Generate a complete, professional website that looks like it was built by a top-tier web agency with modern design trends.`
         
         let generatedCode = ''
         
