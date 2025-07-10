@@ -499,17 +499,13 @@ Generate a complete, professional website that looks like it was built by a top-
           generatedCode = data.candidates[0].content.parts[0].text
         }
         
-        // Clean the generated code to extract just the React component
+        // Clean the generated code to extract just the HTML content
         let cleanCode = generatedCode.trim()
         
-        // Remove markdown code blocks
-        cleanCode = cleanCode.replace(/^```(?:jsx|javascript|js)?\n?/gm, '')
-        cleanCode = cleanCode.replace(/\n?```$/gm, '')
-        
-        // Remove explanatory text before the component
-        const componentStart = cleanCode.search(/(?:const|function)\s+\w+\s*=|\w+\s*=\s*\(\s*\)\s*=>/)
-        if (componentStart > 0) {
-          cleanCode = cleanCode.substring(componentStart)
+        // Remove any explanatory text before HTML
+        const htmlStart = cleanCode.search(/<[^>]+>/);
+        if (htmlStart > 0) {
+          cleanCode = cleanCode.substring(htmlStart);
         }
         
         // If the code doesn't start with a component, try to extract it
