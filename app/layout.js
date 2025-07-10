@@ -81,8 +81,8 @@ export default function RootLayout({ children }) {
                     <Link href="/agents" className="text-gray-300 hover:text-white transition-colors">
                       Agents
                     </Link>
-                    <Link href="/categories" className="text-gray-300 hover:text-white transition-colors">
-                      Categories
+                    <Link href="/chatbot-builder" className="text-gray-300 hover:text-white transition-colors">
+                      Chatbot Builder
                     </Link>
                   </nav>
                   
