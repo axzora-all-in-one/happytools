@@ -240,9 +240,9 @@ export default function ModernToolsGrid({ searchQuery = '', categoryFilter = 'al
               onChange={(e) => setSortBy(e.target.value)}
               className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-full px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-white/30"
             >
-              <option value="featured_at">Latest</option>
-              <option value="votes">Most Popular</option>
-              <option value="name">Name</option>
+              <option value="featured_at" className="bg-gray-800 text-white">Latest</option>
+              <option value="votes" className="bg-gray-800 text-white">Most Popular</option>
+              <option value="name" className="bg-gray-800 text-white">Name</option>
             </select>
             
             <Button 
@@ -311,7 +311,7 @@ export default function ModernToolsGrid({ searchQuery = '', categoryFilter = 'al
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="flex-1 border-white/30 text-gray-200 hover:bg-white/20 hover:text-white bg-white/10"
+                        className="flex-1 border-gray-500 text-gray-800 bg-gray-100 hover:bg-gray-200 hover:text-gray-900"
                         onClick={() => window.open(tool.url, '_blank')}
                       >
                         <ExternalLink className="w-3 h-3 mr-1" />
@@ -355,7 +355,7 @@ export default function ModernToolsGrid({ searchQuery = '', categoryFilter = 'al
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="border-white/20 text-white hover:bg-white/10"
+                      className="border-gray-500 text-gray-800 bg-gray-100 hover:bg-gray-200 hover:text-gray-900"
                       onClick={() => window.open(tool.url, '_blank')}
                     >
                       <ExternalLink className="w-3 h-3 mr-1" />

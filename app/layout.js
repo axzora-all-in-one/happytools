@@ -1,5 +1,6 @@
 import './globals.css'
 import { Plus_Jakarta_Sans } from 'next/font/google'
+import Link from 'next/link'
 
 const plusJakartaSans = Plus_Jakarta_Sans({ 
   subsets: ['latin'],
@@ -54,10 +55,10 @@ export default function RootLayout({ children }) {
     <html lang="en" className="scroll-smooth">
       <body className={plusJakartaSans.className}>
         <div className="min-h-screen">
-          <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-lg border-b border-white/10">
+          <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/90 backdrop-blur-lg border-b border-white/10">
             <div className="container mx-auto px-4 py-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
+                <Link href="/" className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-lg">❤️</span>
                   </div>
@@ -69,20 +70,33 @@ export default function RootLayout({ children }) {
                       AI Tools Discovery
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="hidden md:flex items-center space-x-2 text-sm text-gray-300">
-                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                    <span>Daily Updates</span>
-                  </div>
-                  <div className="text-sm text-gray-400 hidden md:block">
-                    Making AI Discovery Happy
+                </Link>
+                <div className="flex items-center space-x-6">
+                  <nav className="hidden md:flex items-center space-x-6">
+                    <Link href="/" className="text-gray-300 hover:text-white transition-colors">
+                      Home
+                    </Link>
+                    <Link href="/agents" className="text-gray-300 hover:text-white transition-colors">
+                      Agents
+                    </Link>
+                    <Link href="/categories" className="text-gray-300 hover:text-white transition-colors">
+                      Categories
+                    </Link>
+                  </nav>
+                  <div className="flex items-center space-x-4">
+                    <div className="hidden md:flex items-center space-x-2 text-sm text-gray-300">
+                      <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                      <span>Daily Updates</span>
+                    </div>
+                    <div className="text-sm text-gray-400 hidden lg:block">
+                      Making AI Discovery Happy
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </header>
-          <main>
+          <main className="pt-20">
             {children}
           </main>
           <footer className="bg-slate-900 border-t border-white/10 py-12">
