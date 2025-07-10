@@ -390,6 +390,114 @@ backend:
         agent: "testing"
         comment: "✅ PASSED - Error handling working excellently. Correctly handles unknown agent types, malformed JSON requests, and missing inputs across all agents. Provides clear error messages and graceful degradation. Minor: Missing agentId returns user-friendly message instead of 500 error (acceptable behavior)."
 
+  - task: "POST /api/agents/run - Introduction Email Generator (intro-email)"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW agent implemented - Introduction Email Generator that creates professional introduction emails between two people. Requires person1, person2, purpose, and optional context parameters. Needs comprehensive testing for input validation and email generation."
+
+  - task: "POST /api/agents/run - Follow-Up Writer with OpenAI (follow-up-writer)"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW agent implemented - Follow-Up Writer using OpenAI API to generate professional follow-up emails. Requires apiKey, previousEmail, recipient, and optional purpose parameters. Needs testing for OpenAI integration and error handling without API key."
+
+  - task: "POST /api/agents/run - Most Traded Stocks with RapidAPI (stock-finder)"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW agent implemented - Stock Finder using RapidAPI Yahoo Finance integration. Shows demo data when no API key provided, real data integration when API key available. Supports market and timeframe parameters. Needs testing for both demo and API key scenarios."
+
+  - task: "POST /api/agents/run - Crypto Market Pulse (crypto-pulse)"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW agent implemented - Crypto Market Pulse providing cryptocurrency market data. Supports focus options (Top 10, All Markets) and timeframe parameters. Uses demo data with realistic market information. Needs testing for different focus options and parameter combinations."
+
+  - task: "POST /api/agents/run - AI or Human Detector with OpenAI (ai-detector)"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW agent implemented - AI Detector using OpenAI API to analyze text and determine if it was written by AI or human. Requires apiKey and text parameters. Needs testing for OpenAI integration, error handling without API key, and text analysis functionality."
+
+  - task: "POST /api/agents/run - SEO Blog Writer with OpenAI (seo-writer)"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW agent implemented - SEO Blog Writer using OpenAI API to generate SEO-optimized blog posts. Requires apiKey and topic, supports optional keywords, length, and tone parameters. Needs testing for content generation and parameter validation."
+
+  - task: "POST /api/agents/run - PDF Explainer with OpenAI (pdf-explainer)"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW agent implemented - PDF Explainer using OpenAI API to analyze PDF content. Requires apiKey and pdfText, supports different task types (Summary, Key Points, Q&A, Explanation, Action Items). Needs testing for different task types and content analysis."
+
+  - task: "POST /api/agents/run - Contract/Policy Analyzer with OpenAI (fine-print-checker)"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW agent implemented - Fine Print Checker using OpenAI API to analyze contracts and policies for potential issues. Requires apiKey and document, supports focus parameter (All Issues, Financial Terms, etc.). Needs testing for contract analysis and focus area functionality."
+
+  - task: "POST /api/agents/run - Personal Growth Coach with OpenAI (clara-coach)"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW agent implemented - Clara Coach using OpenAI API as a personal growth coach. Requires apiKey and situation, supports optional mood and goal parameters. Provides empathetic, personalized guidance. Needs testing for coaching functionality and parameter handling."
+
 frontend:
   - task: "Frontend UI components"
     implemented: false
