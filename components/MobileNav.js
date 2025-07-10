@@ -10,7 +10,7 @@ export default function MobileNav() {
   const navItems = [
     { href: '/', label: 'Home', icon: Home, description: 'Discover AI Tools' },
     { href: '/agents', label: 'AI Agents', icon: Bot, description: 'Professional AI Agents' },
-    { href: '/categories', label: 'Categories', icon: Grid3X3, description: 'Browse by Category' }
+    { href: '/chatbot-builder', label: 'Chatbot Builder', icon: Grid3X3, description: 'Build Custom Chatbots' }
   ]
 
   const quickActions = [
