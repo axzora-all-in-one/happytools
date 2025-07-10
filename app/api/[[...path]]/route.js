@@ -508,16 +508,14 @@ Generate a complete, professional website that looks like it was built by a top-
           cleanCode = cleanCode.substring(htmlStart);
         }
         
-        // If the code doesn't start with a component, try to extract it
-        if (!cleanCode.match(/^(?:const|function|export)/)) {
-          const lines = cleanCode.split('\n')
-          let startIndex = -1
-          
-          for (let i = 0; i < lines.length; i++) {
-            if (lines[i].match(/(?:const|function)\s+\w+\s*=|\w+\s*=\s*\(\s*\)\s*=>/)) {
-              startIndex = i
-              break
-            }
+        // Remove markdown code blocks
+        cleanCode = cleanCode.replace(/^```(?:html|HTML)?\n?/gm, '')
+        cleanCode = cleanCode.replace(/\n?```$/gm, '')
+        
+        // Remove any remaining explanatory text patterns
+        cleanCode = cleanCode.replace(/^.*?(?=<)/s, '');
+        
+        generatedCode = cleanCode
           }
           
           if (startIndex >= 0) {
