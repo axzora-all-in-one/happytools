@@ -32,6 +32,163 @@ export async function OPTIONS() {
   return handleCORS(new NextResponse(null, { status: 200 }))
 }
 
+// Helper function to create basic workflow template
+function createBasicWorkflowTemplate(platform, name, description) {
+  if (platform === 'n8n') {
+    return {
+      name: name,
+      nodes: [
+        {
+          id: "webhook-trigger",
+          name: "Webhook Trigger",
+          type: "n8n-nodes-base.webhook",
+          position: [250, 300],
+          webhookId: "webhook-id-placeholder",
+          parameters: {
+            path: "webhook",
+            httpMethod: "POST",
+            responseMode: "onReceived"
+          }
+        },
+        {
+          id: "process-data",
+          name: "Process Data",
+          type: "n8n-nodes-base.function",
+          position: [450, 300],
+          parameters: {
+            functionCode: `// Process incoming data
+const items = [];
+for (const item of $input.all()) {
+  items.push({
+    json: {
+      ...item.json,
+      processed: true,
+      timestamp: new Date().toISOString()
+    }
+  });
+}
+return items;`
+          }
+        }
+      ],
+      connections: {
+        "webhook-trigger": {
+          "main": [
+            [
+              {
+                "node": "process-data",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      settings: {
+        executionOrder: "v1"
+      }
+    }
+  } else {
+    return {
+      name: name,
+      scenario: {
+        dsl: "1.0.0",
+        flow: [
+          {
+            id: 1,
+            module: "webhook:customWebhook",
+            version: 1,
+            parameters: {
+              hook: "webhook-id-placeholder"
+            },
+            mapper: {},
+            metadata: {
+              designer: {
+                x: 0,
+                y: 0
+              }
+            }
+          },
+          {
+            id: 2,
+            module: "util:SetVariable2",
+            version: 1,
+            parameters: {},
+            mapper: {
+              name: "processed_data",
+              scope: "roundtrip",
+              value: "{{1.data}}"
+            },
+            metadata: {
+              designer: {
+                x: 300,
+                y: 0
+              }
+            }
+          }
+        ],
+        metadata: {
+          instant: true,
+          version: 1,
+          scenario: {
+            roundtrips: 1,
+            maxCycles: 1,
+            autoCommit: true,
+            sequential: false,
+            slots: null,
+            confidential: false,
+            dataloss: false,
+            dlq: false,
+            freshVariables: false
+          }
+        }
+      }
+    }
+  }
+}
+
+// Helper function to generate visual preview
+function generateVisualPreview(workflowJson, platform) {
+  try {
+    if (platform === 'n8n') {
+      const nodeCount = workflowJson.nodes ? workflowJson.nodes.length : 0
+      const connectionCount = workflowJson.connections ? Object.keys(workflowJson.connections).length : 0
+      
+      return `📊 N8N Workflow Preview:
+• ${nodeCount} nodes configured
+• ${connectionCount} connections mapped
+• Execution order: ${workflowJson.settings?.executionOrder || 'v1'}
+• Ready for import into n8n`
+    } else {
+      const moduleCount = workflowJson.scenario?.flow ? workflowJson.scenario.flow.length : 0
+      
+      return `📊 Make.com Workflow Preview:
+• ${moduleCount} modules configured
+• Scenario version: ${workflowJson.scenario?.metadata?.version || 1}
+• Auto-commit: ${workflowJson.scenario?.metadata?.scenario?.autoCommit ? 'enabled' : 'disabled'}
+• Ready for import into Make.com`
+    }
+  } catch (error) {
+    return `📊 Workflow Preview:
+• Generated successfully
+• Platform: ${platform}
+• Ready for import`
+  }
+}
+
+// Helper function to count nodes in workflow
+function countNodes(workflowJson, platform) {
+  try {
+    if (platform === 'n8n') {
+      return workflowJson.nodes ? workflowJson.nodes.length : 0
+    } else {
+      return workflowJson.scenario?.flow ? workflowJson.scenario.flow.length : 0
+    }
+  } catch (error) {
+    return 0
+  }
+}
+
 // Helper function to transform Product Hunt data to our format
 function transformPHToolToDBFormat(phTool) {
   return {
