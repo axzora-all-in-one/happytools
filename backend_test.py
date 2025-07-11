@@ -691,6 +691,7 @@ class BackendTester:
         # Run all test suites
         self.test_new_professional_agents()
         self.test_enhanced_scraping()
+        self.test_workflow_builder()
         self.test_input_validation()
         
         # Print final summary
