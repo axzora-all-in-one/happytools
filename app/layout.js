@@ -84,6 +84,9 @@ export default function RootLayout({ children }) {
                     <Link href="/chatbot-builder" className="text-gray-300 hover:text-white transition-colors">
                       Chatbot Builder
                     </Link>
+                    <Link href="/workflow-builder" className="text-gray-300 hover:text-white transition-colors">
+                      Workflow Builder
+                    </Link>
                   </nav>
                   
                   {/* Desktop Status */}
