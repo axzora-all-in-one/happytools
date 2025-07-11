@@ -150,6 +150,14 @@ export default function RootLayout({ children }) {
             </div>
           </footer>
         </div>
+        
+        {/* Intervo.ai Chatbot Widget */}
+        <script
+          src="https://widget.intervo.ai"
+          id="intervoLoader"
+          data-widget-id="4eb02a8f-6e8b-4818-bdce-b41fa350dc86"
+          defer
+        />
       </body>
     </html>
   )
