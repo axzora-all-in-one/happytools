@@ -1,6 +1,7 @@
 import './globals.css'
 import { Plus_Jakarta_Sans } from 'next/font/google'
 import Link from 'next/link'
+import Script from 'next/script'
 import MobileNav from '@/components/MobileNav'
 
 const plusJakartaSans = Plus_Jakarta_Sans({ 
