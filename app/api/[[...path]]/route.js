@@ -1877,6 +1877,225 @@ Analysis for: ${inputs.question}`
       return handleCORS(NextResponse.json(cleanedStatusChecks))
     }
 
+    // Workflow Builder generation endpoint - POST /api/workflow-builder/generate
+    if (route === '/workflow-builder/generate' && method === 'POST') {
+      try {
+        const body = await request.json()
+        const { name, description, provider, apiKey, automationDescription, platform, templateId } = body
+        
+        if (!name || !apiKey || !automationDescription || !provider || !platform) {
+          return handleCORS(NextResponse.json(
+            { error: 'Name, API key, automation description, provider, and platform are required' },
+            { status: 400 }
+          ))
+        }
+        
+        // Validate provider
+        const validProviders = ['openai', 'claude', 'gemini']
+        if (!validProviders.includes(provider)) {
+          return handleCORS(NextResponse.json(
+            { error: 'Invalid provider. Must be one of: openai, claude, gemini' },
+            { status: 400 }
+          ))
+        }
+        
+        // Validate platform
+        const validPlatforms = ['n8n', 'make']
+        if (!validPlatforms.includes(platform)) {
+          return handleCORS(NextResponse.json(
+            { error: 'Invalid platform. Must be one of: n8n, make' },
+            { status: 400 }
+          ))
+        }
+        
+        const systemPrompt = `You are an expert automation workflow designer for ${platform === 'n8n' ? 'n8n' : 'Make.com'}. Generate a complete, production-ready workflow JSON that can be directly imported into ${platform === 'n8n' ? 'n8n' : 'Make.com'}.
+
+CRITICAL REQUIREMENTS:
+1. Generate VALID ${platform === 'n8n' ? 'n8n' : 'Make.com'} workflow JSON format
+2. Include all necessary nodes, connections, and configurations
+3. Use realistic node IDs and proper connections
+4. Include error handling and proper data flow
+5. Add helpful comments and descriptions
+6. Make it production-ready with proper settings
+
+${platform === 'n8n' ? `
+N8N WORKFLOW STRUCTURE:
+- Use proper n8n node types (HTTP Request, Email, Database, etc.)
+- Include connections array with proper node linking
+- Use realistic node IDs (UUIDs)
+- Include proper node settings and parameters
+- Add credentials placeholders where needed
+- Include proper error handling nodes
+` : `
+MAKE.COM WORKFLOW STRUCTURE:
+- Use proper Make.com module structure
+- Include scenarios with modules and routes
+- Use realistic module IDs
+- Include proper module settings and mapping
+- Add webhooks, apps, and connections
+- Include error handling and filters
+`}
+
+WORKFLOW GENERATION RULES:
+- Create a logical flow based on the automation description
+- Include appropriate triggers (webhooks, schedules, etc.)
+- Add data transformation nodes where needed
+- Include proper error handling
+- Add notifications and logging
+- Make it scalable and maintainable
+
+IMPORTANT: Return ONLY the JSON workflow, no explanations or markdown formatting.`
+        
+        let generatedWorkflow = ''
+        let visualPreview = ''
+        
+        // Generate workflow based on provider
+        if (provider === 'openai') {
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'gpt-4',
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: `Create a ${platform} workflow for: ${automationDescription}${description ? `\n\nAdditional context: ${description}` : ''}` }
+              ],
+              max_tokens: 3000,
+              temperature: 0.3,
+            }),
+          })
+          
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error?.message || 'OpenAI API error')
+          }
+          
+          const data = await response.json()
+          generatedWorkflow = data.choices[0].message.content
+          
+        } else if (provider === 'claude') {
+          const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'x-api-key': apiKey,
+              'Content-Type': 'application/json',
+              'anthropic-version': '2023-06-01',
+            },
+            body: JSON.stringify({
+              model: 'claude-3-5-sonnet-20241022',
+              max_tokens: 3000,
+              system: systemPrompt,
+              messages: [
+                { role: 'user', content: `Create a ${platform} workflow for: ${automationDescription}${description ? `\n\nAdditional context: ${description}` : ''}` }
+              ],
+            }),
+          })
+          
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error?.message || 'Claude API error')
+          }
+          
+          const data = await response.json()
+          generatedWorkflow = data.content[0].text
+          
+        } else if (provider === 'gemini') {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    { text: `${systemPrompt}\n\nCreate a ${platform} workflow for: ${automationDescription}${description ? `\n\nAdditional context: ${description}` : ''}` }
+                  ]
+                }
+              ],
+              generationConfig: {
+                temperature: 0.3,
+                maxOutputTokens: 3000,
+              },
+            }),
+          })
+          
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error?.message || 'Gemini API error')
+          }
+          
+          const data = await response.json()
+          generatedWorkflow = data.candidates[0].content.parts[0].text
+        }
+        
+        // Clean the generated workflow
+        let cleanWorkflow = generatedWorkflow.trim()
+        
+        // Remove markdown code blocks
+        cleanWorkflow = cleanWorkflow.replace(/^```(?:json|JSON)?\n?/gm, '')
+        cleanWorkflow = cleanWorkflow.replace(/\n?```$/gm, '')
+        
+        // Remove any explanatory text before JSON
+        const jsonStart = cleanWorkflow.indexOf('{')
+        if (jsonStart > 0) {
+          cleanWorkflow = cleanWorkflow.substring(jsonStart)
+        }
+        
+        // Try to parse and validate JSON
+        let workflowJson
+        try {
+          workflowJson = JSON.parse(cleanWorkflow)
+        } catch (parseError) {
+          // If JSON parsing fails, create a basic template
+          workflowJson = createBasicWorkflowTemplate(platform, name, automationDescription)
+        }
+        
+        // Generate visual preview
+        visualPreview = generateVisualPreview(workflowJson, platform)
+        
+        // Save generated workflow to database
+        const workflowRecord = {
+          id: uuidv4(),
+          name: name,
+          description: description || '',
+          platform: platform,
+          provider: provider,
+          automation_description: automationDescription,
+          template_id: templateId || null,
+          workflow_json: workflowJson,
+          visual_preview: visualPreview,
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+        
+        await db.collection('generated_workflows').insertOne(workflowRecord)
+        
+        return handleCORS(NextResponse.json({
+          success: true,
+          workflow: workflowJson,
+          visualPreview: visualPreview,
+          nodeCount: countNodes(workflowJson, platform),
+          metadata: {
+            platform: platform,
+            provider: provider,
+            generated_at: new Date().toISOString(),
+            workflow_id: workflowRecord.id
+          }
+        }))
+        
+      } catch (error) {
+        console.error('Error generating workflow:', error)
+        return handleCORS(NextResponse.json(
+          { error: error.message || 'Failed to generate workflow' },
+          { status: 500 }
+        ))
+      }
+    }
+
     // Route not found
     return handleCORS(NextResponse.json(
       { error: `Route ${route} not found` }, 
