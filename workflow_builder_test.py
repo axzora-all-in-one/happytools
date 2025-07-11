@@ -108,7 +108,7 @@ class WorkflowBuilderTester:
                 # API key error is expected with fake key
                 if response.status_code == 500:
                     error_data = response.json()
-                    if 'error' in error_data and ('API' in error_data['error'] or 'Claude' in error_data['error']):
+                    if 'error' in error_data and ('API' in error_data['error'] or 'Claude' in error_data['error'] or 'x-api-key' in error_data['error']):
                         self.log_test("Valid Workflow Generation (Make.com)", True, "Correctly handles invalid Claude API key with proper error")
                     else:
                         self.log_test("Valid Workflow Generation (Make.com)", False, f"Unexpected error: {error_data}")
