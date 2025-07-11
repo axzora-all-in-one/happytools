@@ -153,11 +153,11 @@ export default function RootLayout({ children }) {
         </div>
         
         {/* Intervo.ai Chatbot Widget */}
-        <script
+        <Script
           src="https://widget.intervo.ai"
           id="intervoLoader"
           data-widget-id="4eb02a8f-6e8b-4818-bdce-b41fa350dc86"
-          defer
+          strategy="lazyOnload"
         />
       </body>
     </html>
