@@ -585,6 +585,63 @@ backend:
         agent: "testing"
         comment: "✅ PASSED - Enhanced targeted scraping working excellently! Successfully scraped 159 tools from 20 targeted category pages, synced 148 new tools to database. Significant improvement over previous scraping with targeted approach delivering high-quality results."
 
+  - task: "NEW POST /api/workflow-builder/generate - Workflow Builder Platform"
+    implemented: true
+    working: true
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "NEW Workflow Builder Platform implemented with comprehensive workflow generation system. Supports OpenAI, Claude, and Gemini API providers for generating n8n and Make.com workflows. Includes input validation, helper functions, and database storage."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Workflow Builder working perfectly! All functionality tested: Input validation (100% success), Provider validation (OpenAI, Claude, Gemini), Platform validation (n8n, Make.com), API integration with proper error handling, JSON response structure, and endpoint availability. Complete workflow generation system ready for production."
+
+  - task: "NEW Workflow Builder Frontend - Complete UI with Templates"
+    implemented: true
+    working: "NA"
+    file: "/app/app/workflow-builder/page.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "NEW Workflow Builder Frontend implemented with 4-step wizard, 8 pre-built templates across different categories, support for OpenAI/Claude/Gemini providers, n8n/Make.com platforms, category filtering, visual workflow preview, and JSON download functionality. Frontend testing not performed as per instructions."
+
+  - task: "NEW Workflow Builder Helper Functions"
+    implemented: true
+    working: true
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "NEW Helper functions implemented: createBasicWorkflowTemplate(), generateVisualPreview(), countNodes(). Support both n8n and Make.com workflow formats with proper JSON structure generation."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Helper functions working correctly. Basic template generation for both n8n and Make.com platforms, visual preview generation with platform-specific formatting, and accurate node counting functionality verified through comprehensive testing."
+
+  - task: "NEW Workflow Builder Database Storage"
+    implemented: true
+    working: true
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "NEW Database storage implemented for generated workflows. Saves workflow records to MongoDB 'generated_workflows' collection with complete metadata including workflow JSON, visual preview, and generation details."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Database storage working correctly. Workflows are properly saved to MongoDB with all required fields: id, name, description, platform, provider, automation_description, template_id, workflow_json, visual_preview, created_at, updated_at. Verified through API testing."
+
 frontend:
   - task: "Frontend UI components"
     implemented: false
