@@ -692,6 +692,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ PASSED - Upcoming matches endpoint working perfectly. Successfully retrieves 3 upcoming matches with proper structure including team names, team codes, series info, venue, date/time, and time until match. Scheduling information accurate and well-formatted."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-VERIFIED - Data quality improvements confirmed! Upcoming matches endpoint returns 3 clean scheduled matches with professional team names (Zimbabwe vs South Africa, etc.). Clean series information (Zimbabwe vs South Africa, 2025 - 1st Test), proper venues (Harare Sports Club), and professional cricket formatting. No irrelevant content detected."
 
   - task: "NEW GET /api/cricket/player-stats - Cricket Player Statistics"
     implemented: true
