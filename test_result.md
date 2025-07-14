@@ -782,12 +782,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "NEW GET /api/cricket/live-matches - Live Cricket Matches Scraper"
-    - "NEW GET /api/cricket/recent-matches - Recent Cricket Matches Scraper"
-    - "NEW GET /api/cricket/upcoming-matches - Upcoming Cricket Matches Scraper"
-    - "NEW GET /api/cricket/player-stats - Cricket Player Statistics"
-    - "NEW GET /api/cricket/match-details - Cricket Match Details with ID"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
