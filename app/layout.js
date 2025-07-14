@@ -88,6 +88,9 @@ export default function RootLayout({ children }) {
                     <Link href="/workflow-builder" className="text-gray-300 hover:text-white transition-colors">
                       Workflow Builder
                     </Link>
+                    <Link href="/live-score" className="text-gray-300 hover:text-white transition-colors">
+                      Live Scores
+                    </Link>
                   </nav>
                   
                   {/* Desktop Status */}
