@@ -215,57 +215,167 @@ async function scrapeCricbuzzLiveMatches() {
       }
     }
     
-    // Method 2: If no matches found, try to extract from text content
+    // Method 2: If no matches found, try to extract from text content and look for any cricket data
     if (matches.length === 0) {
       console.log('No matches found with selectors, trying text extraction...')
       
       const fullText = $('body').text()
+      console.log('Full page text length:', fullText.length)
+      
+      // Look for any cricket-related content
       const lines = fullText.split('\n').filter(line => line.trim().length > 10)
+      console.log('Total lines to process:', lines.length)
+      
+      // Look for common cricket patterns
+      const patterns = [
+        /([A-Z]{3,4})\s+vs\s+([A-Z]{3,4})/g,
+        /([A-Za-z\s]+)\s+vs\s+([A-Za-z\s]+).*(?:live|complete|preview)/i,
+        /(\d+\/\d+).*vs.*(\d+\/\d+)/g,
+        /(England|India|Australia|Pakistan|Bangladesh|Sri Lanka|South Africa|New Zealand|West Indies|Zimbabwe|Afghanistan|Ireland).*vs.*(England|India|Australia|Pakistan|Bangladesh|Sri Lanka|South Africa|New Zealand|West Indies|Zimbabwe|Afghanistan|Ireland)/i
+      ]
+      
+      let foundMatches = 0
       
       for (const line of lines) {
-        if (matches.length >= 5) break
+        if (matches.length >= 10) break
         
-        const vsPattern = /([A-Z]{3,4})\s+vs\s+([A-Z]{3,4})/
-        const vsMatch = line.match(vsPattern)
-        
-        if (vsMatch && !line.toLowerCase().includes('news') && !line.toLowerCase().includes('video')) {
-          const team1 = vsMatch[1]
-          const team2 = vsMatch[2]
+        for (const pattern of patterns) {
+          const lineMatches = [...line.matchAll(pattern)]
           
-          let status = 'upcoming'
-          if (line.toLowerCase().includes('live')) status = 'live'
-          else if (line.toLowerCase().includes('complete')) status = 'completed'
-          
-          const match = {
-            id: uuidv4(),
-            status: status,
-            series: 'Current Match',
-            matchType: 'International',
-            format: getFormatFromText(line),
-            venue: 'Stadium',
-            team1: {
-              name: expandTeamName(team1),
-              code: team1,
-              score: 'N/A',
-              overs: '0'
-            },
-            team2: {
-              name: expandTeamName(team2),
-              code: team2,
-              score: 'N/A', 
-              overs: '0'
-            },
-            commentary: 'Live updates coming soon...',
-            toss: 'Toss details pending',
-            timeAgo: status === 'live' ? 'Live' : 'Recently',
-            keyStats: [{ label: 'Status', value: status }]
+          for (const match of lineMatches) {
+            if (matches.length >= 10) break
+            
+            let team1, team2
+            
+            if (pattern.source.includes('A-Z]{3,4')) {
+              // Short team codes pattern
+              team1 = match[1]
+              team2 = match[2]
+            } else if (pattern.source.includes('England|India')) {
+              // Full team names pattern
+              team1 = match[1]
+              team2 = match[2]
+            } else {
+              continue
+            }
+            
+            // Validate teams
+            if (!team1 || !team2 || team1.length < 2 || team2.length < 2 ||
+                team1.toLowerCase().includes('news') ||
+                team2.toLowerCase().includes('news') ||
+                team1.toLowerCase().includes('video') ||
+                team2.toLowerCase().includes('video') ||
+                team1.toLowerCase().includes('app') ||
+                team2.toLowerCase().includes('app')) {
+              continue
+            }
+            
+            // Skip duplicate teams
+            const isDuplicate = matches.some(m => 
+              (m.team1.name === expandTeamName(team1) && m.team2.name === expandTeamName(team2)) ||
+              (m.team2.name === expandTeamName(team1) && m.team1.name === expandTeamName(team2))
+            )
+            
+            if (isDuplicate) continue
+            
+            let status = 'upcoming'
+            if (line.toLowerCase().includes('live') || line.toLowerCase().includes('batting')) {
+              status = 'live'
+            } else if (line.toLowerCase().includes('complete') || line.toLowerCase().includes('won')) {
+              status = 'completed'
+            } else if (line.toLowerCase().includes('stumps')) {
+              status = 'live'
+            }
+            
+            // Extract scores if present
+            const scorePattern = /(\d+\/\d+|\d+\-\d+)/g
+            const scores = line.match(scorePattern) || []
+            
+            const cricketMatch = {
+              id: uuidv4(),
+              status: status,
+              series: extractSeriesFromLine(line) || 'Current Cricket Match',
+              matchType: 'International',
+              format: getFormatFromText(line),
+              venue: extractVenueFromLine(line) || 'Cricket Ground',
+              team1: {
+                name: expandTeamName(team1),
+                code: team1.length <= 4 ? team1.toUpperCase() : team1.substring(0, 3).toUpperCase(),
+                score: scores[0] || 'TBC',
+                overs: extractOversFromScore(scores[0]) || '0'
+              },
+              team2: {
+                name: expandTeamName(team2),
+                code: team2.length <= 4 ? team2.toUpperCase() : team2.substring(0, 3).toUpperCase(),
+                score: scores[1] || 'TBC',
+                overs: extractOversFromScore(scores[1]) || '0'
+              },
+              commentary: extractCommentaryFromLine(line) || 'Cricket match updates coming soon...',
+              toss: 'Toss details available soon',
+              timeAgo: status === 'live' ? 'Live' : 'Recently',
+              keyStats: [{ label: 'Status', value: status.charAt(0).toUpperCase() + status.slice(1) }]
+            }
+            
+            matches.push(cricketMatch)
+            foundMatches++
+            console.log(`✅ Pattern match found: ${team1} vs ${team2} - ${status} (Pattern: ${pattern.source.substring(0, 30)}...)`)
           }
-          
-          matches.push(match)
-          console.log(`✅ Text extracted: ${team1} vs ${team2} - ${status}`)
         }
       }
+      
+      console.log(`✅ Found ${foundMatches} cricket matches from text patterns`)
     }
+
+// Additional helper functions for line-based extraction
+function extractSeriesFromLine(line) {
+  const seriesPatterns = [
+    /(T20\s*World\s*Cup[^,\n]*)/i,
+    /(World\s*Cup[^,\n]*)/i,
+    /(Test\s*Series[^,\n]*)/i,
+    /(ODI\s*Series[^,\n]*)/i,
+    /(T20I?\s*Series[^,\n]*)/i,
+    /(Major\s*League[^,\n]*)/i,
+    /([A-Za-z\s]+\s*tour\s*of\s*[A-Za-z\s]+)/i,
+    /(India\s*vs\s*England[^,\n]*)/i,
+    /(Australia\s*vs\s*West\s*Indies[^,\n]*)/i
+  ]
+  
+  for (const pattern of seriesPatterns) {
+    const match = line.match(pattern)
+    if (match) return match[1].trim()
+  }
+  return null
+}
+
+function extractVenueFromLine(line) {
+  const venuePatterns = [
+    /(Lord's[^,\n]*)/i,
+    /(MCG|SCG|Wankhede|Eden\s*Gardens|The\s*Oval|Old\s*Trafford)/i,
+    /([A-Za-z\s]+(?:Ground|Stadium|Oval|Park)[^,\n]*)/i
+  ]
+  
+  for (const pattern of venuePatterns) {
+    const match = line.match(pattern)
+    if (match) return match[1].trim()
+  }
+  return null
+}
+
+function extractCommentaryFromLine(line) {
+  const commentaryPatterns = [
+    /(.*won\s+by\s+\d+\s+(?:runs?|wickets?)[^,\n]*)/i,
+    /(.*need\s+\d+\s+runs?[^,\n]*)/i,
+    /(Day\s+\d+[^,\n]*)/i,
+    /(Stumps[^,\n]*)/i,
+    /(Live[^,\n]*)/i
+  ]
+  
+  for (const pattern of commentaryPatterns) {
+    const match = line.match(pattern)
+    if (match) return match[1].trim()
+  }
+  return null
+}
     
     console.log(`✅ Total REAL matches scraped: ${matches.length}`)
     
