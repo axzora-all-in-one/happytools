@@ -336,56 +336,78 @@ async function scrapeCricbuzzRecentMatches() {
   try {
     console.log('Scraping Cricbuzz recent matches...')
     
-    const response = await fetch('https://www.cricbuzz.com/cricket-schedule/recent-matches', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
-    })
+    // Try both main page and recent matches page
+    const urls = [
+      'https://www.cricbuzz.com/',
+      'https://www.cricbuzz.com/cricket-schedule/recent-matches'
+    ]
     
-    if (!response.ok) {
-      return createMockRecentMatches()
-    }
-    
-    const html = await response.text()
-    const $ = cheerio.load(html)
-    const matches = []
-    
-    $('.cb-sch-lst-itm').each((index, element) => {
-      try {
-        const $elem = $(element)
-        
-        const team1Name = $elem.find('.cb-ovr-flo .cb-hmscg-tm-nm:first').text().trim()
-        const team2Name = $elem.find('.cb-ovr-flo .cb-hmscg-tm-nm:last').text().trim()
-        const result = $elem.find('.cb-text-complete').text().trim()
-        const date = $elem.find('.cb-date').text().trim()
-        const series = $elem.find('.cb-ser-mnu').text().trim()
-        
-        if (team1Name && team2Name) {
-          matches.push({
-            id: uuidv4(),
-            series: series || 'Cricket Match',
-            date: date || 'Recently',
-            team1: {
-              name: team1Name,
-              score: '185/6 (20)'
-            },
-            team2: {
-              name: team2Name,
-              score: '152/9 (20)'
-            },
-            result: result || `${team1Name} won by 33 runs`
-          })
+    for (const url of urls) {
+      console.log(`Trying URL: ${url}`)
+      
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5'
         }
-      } catch (err) {
-        console.error('Error parsing recent match:', err)
+      })
+      
+      if (!response.ok) {
+        console.log(`Failed to fetch ${url}:`, response.status)
+        continue
       }
-    })
-    
-    if (matches.length === 0) {
-      return createMockRecentMatches()
+      
+      const html = await response.text()
+      const $ = cheerio.load(html)
+      const matches = []
+      
+      // Search for completed matches
+      $('*').each((index, element) => {
+        if (matches.length >= 6) return false
+        
+        const $elem = $(element)
+        const text = $elem.text()
+        
+        // Look for "Complete" or "won by" patterns
+        if (text.includes('Complete') || text.includes('won by')) {
+          const fullText = $elem.closest('.cb-col-100, .cb-mtch-lst-itm, .cb-schdl').text()
+          
+          // Extract team names and result
+          const vsPattern = /([A-Z]{2,4})\s+vs\s+([A-Z]{2,4})/i
+          const resultPattern = /(.*won by[^,\n]*)/i
+          
+          const vsMatch = fullText.match(vsPattern)
+          const resultMatch = fullText.match(resultPattern)
+          
+          if (vsMatch) {
+            matches.push({
+              id: uuidv4(),
+              series: extractSeriesFromText(fullText) || 'Recent Match',
+              date: 'Recently',
+              team1: {
+                name: expandTeamName(vsMatch[1]),
+                score: extractScoreFromText(fullText, 0) || 'N/A'
+              },
+              team2: {
+                name: expandTeamName(vsMatch[2]),
+                score: extractScoreFromText(fullText, 1) || 'N/A'
+              },
+              result: resultMatch ? resultMatch[1] : `${expandTeamName(vsMatch[1])} vs ${expandTeamName(vsMatch[2])} - Complete`
+            })
+            console.log(`Found recent match: ${vsMatch[1]} vs ${vsMatch[2]}`)
+          }
+        }
+      })
+      
+      if (matches.length > 0) {
+        console.log(`Found ${matches.length} recent matches from ${url}`)
+        return matches
+      }
     }
     
-    return matches.slice(0, 9)
+    console.log('No recent matches found, using mock data')
+    return createMockRecentMatches()
     
   } catch (error) {
     console.error('Error scraping recent matches:', error)
@@ -397,62 +419,116 @@ async function scrapeCricbuzzUpcomingMatches() {
   try {
     console.log('Scraping Cricbuzz upcoming matches...')
     
-    const response = await fetch('https://www.cricbuzz.com/cricket-schedule/upcoming-matches', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
-    })
+    const urls = [
+      'https://www.cricbuzz.com/',
+      'https://www.cricbuzz.com/cricket-schedule/upcoming-matches'
+    ]
     
-    if (!response.ok) {
-      return createMockUpcomingMatches()
-    }
-    
-    const html = await response.text()
-    const $ = cheerio.load(html)
-    const matches = []
-    
-    $('.cb-sch-lst-itm').each((index, element) => {
-      try {
-        const $elem = $(element)
-        
-        const team1Name = $elem.find('.cb-ovr-flo .cb-hmscg-tm-nm:first').text().trim()
-        const team2Name = $elem.find('.cb-ovr-flo .cb-hmscg-tm-nm:last').text().trim()
-        const dateTime = $elem.find('.cb-date').text().trim()
-        const series = $elem.find('.cb-ser-mnu').text().trim()
-        const venue = $elem.find('.cb-venue').text().trim()
-        
-        if (team1Name && team2Name) {
-          matches.push({
-            id: uuidv4(),
-            series: series || 'Cricket Match',
-            dateTime: dateTime || 'Soon',
-            timeUntil: '2 hours',
-            venue: venue || 'Stadium',
-            team1: {
-              name: team1Name,
-              code: team1Name.substring(0, 3).toUpperCase()
-            },
-            team2: {
-              name: team2Name,
-              code: team2Name.substring(0, 3).toUpperCase()
-            }
-          })
+    for (const url of urls) {
+      console.log(`Trying URL: ${url}`)
+      
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
         }
-      } catch (err) {
-        console.error('Error parsing upcoming match:', err)
+      })
+      
+      if (!response.ok) {
+        console.log(`Failed to fetch ${url}:`, response.status)
+        continue
       }
-    })
-    
-    if (matches.length === 0) {
-      return createMockUpcomingMatches()
+      
+      const html = await response.text()
+      const $ = cheerio.load(html)
+      const matches = []
+      
+      // Search for preview/upcoming matches
+      $('*').each((index, element) => {
+        if (matches.length >= 6) return false
+        
+        const $elem = $(element)
+        const text = $elem.text()
+        
+        // Look for "Preview" or upcoming patterns
+        if (text.includes('Preview') || text.includes('Today') || text.includes('Tomorrow')) {
+          const fullText = $elem.closest('.cb-col-100, .cb-mtch-lst-itm, .cb-schdl').text()
+          
+          const vsPattern = /([A-Z]{2,4})\s+vs\s+([A-Z]{2,4})/i
+          const timePattern = /(Today|Tomorrow|Preview|GMT|IST|AM|PM|\d{1,2}:\d{2})/i
+          
+          const vsMatch = fullText.match(vsPattern)
+          const timeMatch = fullText.match(timePattern)
+          
+          if (vsMatch) {
+            matches.push({
+              id: uuidv4(),
+              series: extractSeriesFromText(fullText) || 'Upcoming Match',
+              dateTime: timeMatch ? timeMatch[1] : 'Soon',
+              timeUntil: calculateTimeUntil(timeMatch ? timeMatch[1] : ''),
+              venue: extractVenue(fullText) || 'Stadium',
+              team1: {
+                name: expandTeamName(vsMatch[1]),
+                code: vsMatch[1]
+              },
+              team2: {
+                name: expandTeamName(vsMatch[2]),
+                code: vsMatch[2]
+              }
+            })
+            console.log(`Found upcoming match: ${vsMatch[1]} vs ${vsMatch[2]}`)
+          }
+        }
+      })
+      
+      if (matches.length > 0) {
+        console.log(`Found ${matches.length} upcoming matches from ${url}`)
+        return matches
+      }
     }
     
-    return matches.slice(0, 9)
+    console.log('No upcoming matches found, using mock data')
+    return createMockUpcomingMatches()
     
   } catch (error) {
     console.error('Error scraping upcoming matches:', error)
     return createMockUpcomingMatches()
   }
+}
+
+// Helper functions
+function expandTeamName(code) {
+  const teamMap = {
+    'IND': 'India',
+    'ENG': 'England', 
+    'AUS': 'Australia',
+    'WI': 'West Indies',
+    'RSA': 'South Africa',
+    'ZIM': 'Zimbabwe',
+    'MINY': 'MI New York',
+    'WAF': 'Washington Freedom',
+    'GAW': 'Guyana Amazon Warriors',
+    'DCP': 'Delhi Capitals',
+    'PAK': 'Pakistan',
+    'NZ': 'New Zealand',
+    'SL': 'Sri Lanka',
+    'BAN': 'Bangladesh'
+  }
+  return teamMap[code] || code
+}
+
+function extractScoreFromText(text, index) {
+  const scorePattern = /(\d+(?:\/\d+)?(?:\s*\(\d+(?:\.\d+)?\))?)/g
+  const scores = text.match(scorePattern)
+  return scores && scores[index] ? scores[index] : null
+}
+
+function calculateTimeUntil(timeStr) {
+  if (!timeStr) return 'Soon'
+  if (timeStr.toLowerCase().includes('today')) return 'Today'
+  if (timeStr.toLowerCase().includes('tomorrow')) return 'Tomorrow'
+  if (timeStr.toLowerCase().includes('preview')) return 'Soon'
+  return 'Soon'
 }
 
 async function scrapeCricbuzzPlayerStats() {
