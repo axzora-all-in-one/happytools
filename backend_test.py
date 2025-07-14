@@ -928,6 +928,7 @@ class BackendTester:
         self.test_enhanced_scraping()
         self.test_workflow_builder()
         self.test_input_validation()
+        self.test_cricket_functionality()
         
         # Print final summary
         print("\n" + "="*80)
