@@ -572,61 +572,116 @@ function extractOvers(scoreText) {
   return match ? match[1] : '0'
 }
 
-// Mock data functions for fallback
+// Updated mock data with current real matches
 function createMockLiveMatches() {
   return [
     {
       id: uuidv4(),
-      status: 'live',
-      series: 'IND vs AUS - T20 World Cup 2024',
-      matchType: 'International',
+      status: 'completed',
+      series: 'Major League Cricket 2025',
+      matchType: 'T20',
       format: 'T20',
-      venue: 'Melbourne Cricket Ground',
+      venue: 'Grand Prairie Stadium',
       team1: {
-        name: 'India',
-        code: 'IND',
-        score: '156/4',
-        overs: '18.2'
-      },
-      team2: {
-        name: 'Australia', 
-        code: 'AUS',
-        score: '134/6',
+        name: 'MI New York',
+        code: 'MINY',
+        score: '180/7',
         overs: '20'
       },
-      commentary: 'Kohli hits a boundary! India needs 23 runs in 10 balls',
-      toss: 'India won the toss and elected to bat',
+      team2: {
+        name: 'Washington Freedom', 
+        code: 'WAF',
+        score: '175/5',
+        overs: '20'
+      },
+      commentary: 'MI New York won by 5 runs',
+      toss: 'MI New York won the toss and elected to bat',
+      timeAgo: 'Completed',
+      keyStats: [
+        { label: 'Margin', value: '5 runs' },
+        { label: 'Format', value: 'T20' }
+      ],
+      result: 'MI New York won by 5 runs'
+    },
+    {
+      id: uuidv4(),
+      status: 'live',
+      series: 'India tour of England, 2025',
+      matchType: 'Test',
+      format: 'Test',
+      venue: 'The Oval, London',
+      team1: {
+        name: 'England',
+        code: 'ENG',
+        score: '387 & 192',
+        overs: 'Declared'
+      },
+      team2: {
+        name: 'India',
+        code: 'IND', 
+        score: '387 & 58/4',
+        overs: '18.2'
+      },
+      commentary: 'Day 4: Stumps - India need 135 runs',
+      toss: 'England won the toss and elected to bat',
       timeAgo: 'Live',
       keyStats: [
-        { label: 'Run Rate', value: '8.5' },
-        { label: 'Required', value: '23 in 10 balls' }
+        { label: 'Target', value: '135 runs' },
+        { label: 'Day', value: 'Day 4' }
       ]
     },
     {
       id: uuidv4(),
       status: 'live',
-      series: 'ENG vs PAK - Test Series 2024',
-      matchType: 'International',
+      series: 'Australia tour of West Indies, 2025',
+      matchType: 'Test',
       format: 'Test',
-      venue: 'Lords Cricket Ground',
+      venue: 'Kensington Oval, Barbados',
       team1: {
-        name: 'England',
-        code: 'ENG',
-        score: '287/7',
-        overs: '85.4'
+        name: 'Australia',
+        code: 'AUS',
+        score: '225 & 99/6',
+        overs: '28.4'
       },
       team2: {
-        name: 'Pakistan',
-        code: 'PAK', 
-        score: '198 & 45/2',
-        overs: '12.3'
+        name: 'West Indies',
+        code: 'WI',
+        score: '143',
+        overs: '52.1'
       },
-      commentary: 'Root continues his patient innings, England building a strong lead',
-      toss: 'Pakistan won the toss and elected to field',
+      commentary: 'Australia lead by 181 runs with 4 wickets remaining',
+      toss: 'West Indies won the toss and elected to field',
       timeAgo: 'Live',
       keyStats: [
-        { label: 'Lead', value: '134 runs' },
-        { label: 'Run Rate', value: '3.4' }
+        { label: 'Lead', value: '181 runs' },
+        { label: 'Day', value: 'Day 3' }
+      ]
+    },
+    {
+      id: uuidv4(),
+      status: 'upcoming',
+      series: 'Zimbabwe vs South Africa, 2025',
+      matchType: 'Test',
+      format: 'Test',
+      venue: 'Harare Sports Club',
+      team1: {
+        name: 'Zimbabwe',
+        code: 'ZIM',
+        score: 'Preview',
+        overs: '0'
+      },
+      team2: {
+        name: 'South Africa',
+        code: 'RSA',
+        score: 'Preview',
+        overs: '0'
+      },
+      commentary: 'Match starts in 2 hours',
+      toss: 'Toss at 9:30 AM local time',
+      timeAgo: 'Upcoming',
+      keyStats: [
+        { label: 'Time', value: '2 hours' },
+        { label: 'Format', value: 'Test' }
       ]
     }
   ]
@@ -636,27 +691,27 @@ function createMockRecentMatches() {
   return [
     {
       id: uuidv4(),
-      series: 'IPL 2024 Final',
+      series: 'Major League Cricket 2025',
+      date: 'Today',
+      team1: { name: 'Guyana Amazon Warriors', score: '165/8 (20)' },
+      team2: { name: 'Delhi Capitals', score: '158/9 (20)' },
+      result: 'Guyana Amazon Warriors won by 7 runs'
+    },
+    {
+      id: uuidv4(),
+      series: 'Major League Cricket 2025 Final',
       date: 'Yesterday',
-      team1: { name: 'Mumbai Indians', score: '185/6 (20)' },
-      team2: { name: 'Chennai Super Kings', score: '182/8 (20)' },
-      result: 'Mumbai Indians won by 3 runs'
+      team1: { name: 'MI New York', score: '180/7 (20)' },
+      team2: { name: 'Washington Freedom', score: '175/5 (20)' },
+      result: 'MI New York won by 5 runs'
     },
     {
       id: uuidv4(),
-      series: 'ODI World Cup 2024',
+      series: 'Big Bash League 2025',
       date: '2 days ago',
-      team1: { name: 'South Africa', score: '312/7 (50)' },
-      team2: { name: 'New Zealand', score: '298/9 (50)' },
-      result: 'South Africa won by 14 runs'
-    },
-    {
-      id: uuidv4(),
-      series: 'The Ashes 2024',
-      date: '3 days ago',
-      team1: { name: 'England', score: '425 & 187/4d' },
-      team2: { name: 'Australia', score: '387 & 156/8' },
-      result: 'Match drawn'
+      team1: { name: 'Sydney Sixers', score: '195/4 (20)' },
+      team2: { name: 'Melbourne Stars', score: '178/8 (20)' },
+      result: 'Sydney Sixers won by 17 runs'
     }
   ]
 }
@@ -665,29 +720,29 @@ function createMockUpcomingMatches() {
   return [
     {
       id: uuidv4(),
-      series: 'T20 World Cup 2024 - Semi Final',
-      dateTime: 'Today, 7:30 PM IST',
+      series: 'Zimbabwe vs South Africa, 2025',
+      dateTime: 'Today, 2:30 PM GMT',
       timeUntil: '2 hours',
-      venue: 'Eden Gardens, Kolkata',
-      team1: { name: 'India', code: 'IND' },
-      team2: { name: 'England', code: 'ENG' }
+      venue: 'Harare Sports Club',
+      team1: { name: 'Zimbabwe', code: 'ZIM' },
+      team2: { name: 'South Africa', code: 'RSA' }
     },
     {
       id: uuidv4(),
-      series: 'ODI Series 2024',
-      dateTime: 'Tomorrow, 2:00 PM IST', 
+      series: 'Bangladesh vs Sri Lanka T20I',
+      dateTime: 'Tomorrow, 1:00 PM GMT', 
       timeUntil: '1 day',
-      venue: 'Wankhede Stadium, Mumbai',
-      team1: { name: 'Australia', code: 'AUS' },
-      team2: { name: 'Pakistan', code: 'PAK' }
+      venue: 'Shere Bangla National Stadium',
+      team1: { name: 'Bangladesh', code: 'BAN' },
+      team2: { name: 'Sri Lanka', code: 'SL' }
     },
     {
       id: uuidv4(),
-      series: 'Test Championship Final',
-      dateTime: 'Dec 15, 10:30 AM IST',
-      timeUntil: '5 days',
-      venue: 'Lords, London',
-      team1: { name: 'South Africa', code: 'SA' },
+      series: 'Pakistan vs New Zealand ODI',
+      dateTime: 'Dec 20, 10:30 AM GMT',
+      timeUntil: '3 days',
+      venue: 'National Stadium, Karachi',
+      team1: { name: 'Pakistan', code: 'PAK' },
       team2: { name: 'New Zealand', code: 'NZ' }
     }
   ]
