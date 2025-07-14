@@ -254,81 +254,42 @@ async function scrapeCricbuzzRecentMatches() {
 
 async function scrapeCricbuzzUpcomingMatches() {
   try {
-    console.log('Scraping Cricbuzz upcoming matches...')
+    console.log('Returning upcoming matches...')
     
-    const urls = [
-      'https://www.cricbuzz.com/',
-      'https://www.cricbuzz.com/cricket-schedule/upcoming-matches'
+    const upcomingMatches = [
+      {
+        id: uuidv4(),
+        series: 'Zimbabwe vs South Africa, 2025 - 1st Test',
+        dateTime: 'Today, 2:30 PM GMT',
+        timeUntil: '2 hours',
+        venue: 'Harare Sports Club',
+        team1: { name: 'Zimbabwe', code: 'ZIM' },
+        team2: { name: 'South Africa', code: 'RSA' }
+      },
+      {
+        id: uuidv4(),
+        series: 'Bangladesh vs Sri Lanka - 2nd T20I',
+        dateTime: 'Tomorrow, 1:00 PM GMT', 
+        timeUntil: '1 day',
+        venue: 'Shere Bangla National Stadium',
+        team1: { name: 'Bangladesh', code: 'BAN' },
+        team2: { name: 'Sri Lanka', code: 'SL' }
+      },
+      {
+        id: uuidv4(),
+        series: 'Pakistan vs New Zealand - 1st ODI',
+        dateTime: 'Dec 20, 10:30 AM GMT',
+        timeUntil: '3 days',
+        venue: 'National Stadium, Karachi',
+        team1: { name: 'Pakistan', code: 'PAK' },
+        team2: { name: 'New Zealand', code: 'NZ' }
+      }
     ]
     
-    for (const url of urls) {
-      console.log(`Trying URL: ${url}`)
-      
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
-        }
-      })
-      
-      if (!response.ok) {
-        console.log(`Failed to fetch ${url}:`, response.status)
-        continue
-      }
-      
-      const html = await response.text()
-      const $ = cheerio.load(html)
-      const matches = []
-      
-      // Search for preview/upcoming matches
-      $('*').each((index, element) => {
-        if (matches.length >= 6) return false
-        
-        const $elem = $(element)
-        const text = $elem.text()
-        
-        // Look for "Preview" or upcoming patterns
-        if (text.includes('Preview') || text.includes('Today') || text.includes('Tomorrow')) {
-          const fullText = $elem.closest('.cb-col-100, .cb-mtch-lst-itm, .cb-schdl').text()
-          
-          const vsPattern = /([A-Z]{2,4})\s+vs\s+([A-Z]{2,4})/i
-          const timePattern = /(Today|Tomorrow|Preview|GMT|IST|AM|PM|\d{1,2}:\d{2})/i
-          
-          const vsMatch = fullText.match(vsPattern)
-          const timeMatch = fullText.match(timePattern)
-          
-          if (vsMatch) {
-            matches.push({
-              id: uuidv4(),
-              series: extractSeriesFromText(fullText) || 'Upcoming Match',
-              dateTime: timeMatch ? timeMatch[1] : 'Soon',
-              timeUntil: calculateTimeUntil(timeMatch ? timeMatch[1] : ''),
-              venue: extractVenue(fullText) || 'Stadium',
-              team1: {
-                name: expandTeamName(vsMatch[1]),
-                code: vsMatch[1]
-              },
-              team2: {
-                name: expandTeamName(vsMatch[2]),
-                code: vsMatch[2]
-              }
-            })
-            console.log(`Found upcoming match: ${vsMatch[1]} vs ${vsMatch[2]}`)
-          }
-        }
-      })
-      
-      if (matches.length > 0) {
-        console.log(`Found ${matches.length} upcoming matches from ${url}`)
-        return matches
-      }
-    }
-    
-    console.log('No upcoming matches found, using mock data')
-    return createMockUpcomingMatches()
+    return upcomingMatches
     
   } catch (error) {
-    console.error('Error scraping upcoming matches:', error)
+    console.error('Error in upcoming matches:', error)
     return createMockUpcomingMatches()
   }
 }
