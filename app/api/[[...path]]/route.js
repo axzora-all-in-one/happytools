@@ -3,21 +3,25 @@ import { v4 as uuidv4 } from 'uuid'
 import { NextResponse } from 'next/server'
 import * as cheerio from 'cheerio'
 
-// Cricbuzz scraping functions
+// Cricbuzz scraping functions with real-time data
 async function scrapeCricbuzzLiveMatches() {
   try {
-    console.log('Scraping REAL Cricbuzz live matches...')
+    console.log('Fetching REAL LIVE cricket data...')
     
-    // Fetch Cricbuzz homepage for real data
-    const response = await fetch('https://www.cricbuzz.com/', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
-      }
-    })
+    let scrapedMatches = []
+    
+    // Try to scrape from Cricbuzz
+    try {
+      const response = await fetch('https://www.cricbuzz.com/', {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        },
+        timeout: 5000
+      })
     
     if (!response.ok) {
       console.error('Failed to fetch Cricbuzz:', response.status, response.statusText)
