@@ -2034,6 +2034,116 @@ Analysis for: ${inputs.question}`
       return handleCORS(NextResponse.json(cleanedStatusChecks))
     }
 
+    // Cricket API endpoints
+    if (route.startsWith('/cricket/')) {
+      const cricketRoute = route.replace('/cricket/', '')
+      
+      // Live Matches endpoint - GET /api/cricket/live-matches
+      if (cricketRoute === 'live-matches' && method === 'GET') {
+        try {
+          const liveMatches = await scrapeCricbuzzLiveMatches()
+          
+          return handleCORS(NextResponse.json({
+            success: true,
+            matches: liveMatches,
+            lastUpdated: new Date().toISOString()
+          }))
+        } catch (error) {
+          console.error('Error fetching live matches:', error)
+          return handleCORS(NextResponse.json(
+            { success: false, error: 'Failed to fetch live matches' },
+            { status: 500 }
+          ))
+        }
+      }
+      
+      // Recent Matches endpoint - GET /api/cricket/recent-matches
+      if (cricketRoute === 'recent-matches' && method === 'GET') {
+        try {
+          const recentMatches = await scrapeCricbuzzRecentMatches()
+          
+          return handleCORS(NextResponse.json({
+            success: true,
+            matches: recentMatches,
+            lastUpdated: new Date().toISOString()
+          }))
+        } catch (error) {
+          console.error('Error fetching recent matches:', error)
+          return handleCORS(NextResponse.json(
+            { success: false, error: 'Failed to fetch recent matches' },
+            { status: 500 }
+          ))
+        }
+      }
+      
+      // Upcoming Matches endpoint - GET /api/cricket/upcoming-matches
+      if (cricketRoute === 'upcoming-matches' && method === 'GET') {
+        try {
+          const upcomingMatches = await scrapeCricbuzzUpcomingMatches()
+          
+          return handleCORS(NextResponse.json({
+            success: true,
+            matches: upcomingMatches,
+            lastUpdated: new Date().toISOString()
+          }))
+        } catch (error) {
+          console.error('Error fetching upcoming matches:', error)
+          return handleCORS(NextResponse.json(
+            { success: false, error: 'Failed to fetch upcoming matches' },
+            { status: 500 }
+          ))
+        }
+      }
+      
+      // Player Stats endpoint - GET /api/cricket/player-stats
+      if (cricketRoute === 'player-stats' && method === 'GET') {
+        try {
+          const playerStats = await scrapeCricbuzzPlayerStats()
+          
+          return handleCORS(NextResponse.json({
+            success: true,
+            stats: playerStats,
+            lastUpdated: new Date().toISOString()
+          }))
+        } catch (error) {
+          console.error('Error fetching player stats:', error)
+          return handleCORS(NextResponse.json(
+            { success: false, error: 'Failed to fetch player stats' },
+            { status: 500 }
+          ))
+        }
+      }
+      
+      // Match Details endpoint - GET /api/cricket/match-details?id=...
+      if (cricketRoute === 'match-details' && method === 'GET') {
+        try {
+          const url = new URL(request.url)
+          const matchId = url.searchParams.get('id')
+          
+          if (!matchId) {
+            return handleCORS(NextResponse.json(
+              { success: false, error: 'Match ID is required' },
+              { status: 400 }
+            ))
+          }
+          
+          const matchDetails = await scrapeCricbuzzMatchDetails(matchId)
+          
+          return handleCORS(NextResponse.json({
+            success: true,
+            match: matchDetails,
+            lastUpdated: new Date().toISOString()
+          }))
+        } catch (error) {
+          console.error('Error fetching match details:', error)
+          return handleCORS(NextResponse.json(
+            { success: false, error: 'Failed to fetch match details' },
+            { status: 500 }
+          ))
+        }
+      }
+    }
+
     // Workflow Builder generation endpoint - POST /api/workflow-builder/generate
     if (route === '/workflow-builder/generate' && method === 'POST') {
       try {
