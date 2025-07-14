@@ -66,156 +66,45 @@ async function scrapeCricbuzzLiveMatches() {
       /(live|complete|stumps|innings break)/gi
     ]
     
-    for (const selector of liveSelectors) {
-      const elements = $(selector)
-      console.log(`Checking selector ${selector}: found ${elements.length} elements`)
-      
-      elements.each((index, element) => {
-        if (matches.length >= 10) return false
+    for (const pattern of cricketPatterns) {
+      const matches = [...bodyText.matchAll(pattern)]
+      for (const match of matches) {
+        if (scrapedMatches.length >= 5) break
         
-        try {
-          const $elem = $(element)
-          const elemText = $elem.text()
+        let team1 = match[1]?.trim()
+        let team2 = match[2]?.trim()
+        
+        if (team1 && team2 && team1 !== team2) {
+          const status = bodyText.toLowerCase().includes('live') ? 'live' : 
+                       bodyText.toLowerCase().includes('complete') ? 'completed' : 'upcoming'
           
-          // Skip if element is too small or contains irrelevant content
-          if (elemText.length < 20 || 
-              elemText.toLowerCase().includes('advertisement') ||
-              elemText.toLowerCase().includes('follow us') ||
-              elemText.toLowerCase().includes('mobile app') ||
-              elemText.toLowerCase().includes('privacy') ||
-              elemText.toLowerCase().includes('terms') ||
-              elemText.toLowerCase().includes('copyright')) {
-            return
-          }
+          scrapedMatches.push({
+            id: uuidv4(),
+            status: status,
+            series: 'Current Cricket Match',
+            matchType: 'International',
+            format: 'Cricket',
+            venue: 'Cricket Ground',
+            team1: {
+              name: expandTeamName(team1),
+              code: team1.length <= 4 ? team1.toUpperCase() : team1.substring(0, 3).toUpperCase(),
+              score: match[3] || 'TBC',
+              overs: '0'
+            },
+            team2: {
+              name: expandTeamName(team2),
+              code: team2.length <= 4 ? team2.toUpperCase() : team2.substring(0, 3).toUpperCase(),
+              score: 'TBC',
+              overs: '0'
+            },
+            commentary: 'Live cricket updates...',
+            toss: 'Toss details pending',
+            timeAgo: 'Live',
+            keyStats: [{ label: 'Status', value: status }]
+          })
           
-          // Look for team vs team pattern
-          const vsPattern = /([A-Z]{2,4})\s+vs\s+([A-Z]{2,4})|([A-Za-z\s]+)\s+vs\s+([A-Za-z\s]+)/i
-          const vsMatch = elemText.match(vsPattern)
-          
-          if (vsMatch) {
-            let team1 = vsMatch[1] || vsMatch[3]
-            let team2 = vsMatch[2] || vsMatch[4]
-            
-            // Clean team names
-            team1 = team1?.trim()
-            team2 = team2?.trim()
-            
-            // Skip if teams are invalid
-            if (!team1 || !team2 || team1.length < 2 || team2.length < 2 ||
-                team1.toLowerCase().includes('news') ||
-                team2.toLowerCase().includes('news') ||
-                team1.toLowerCase().includes('video') ||
-                team2.toLowerCase().includes('video')) {
-              return
-            }
-            
-            // Extract scores
-            const scorePattern = /(\d+\/\d+|\d+\-\d+|\d+\s*\(\d+\.?\d*\))/g
-            const scores = elemText.match(scorePattern) || []
-            
-            // Extract status
-            let status = 'upcoming'
-            if (elemText.toLowerCase().includes('live') || elemText.toLowerCase().includes('batting')) {
-              status = 'live'
-            } else if (elemText.toLowerCase().includes('won') || elemText.toLowerCase().includes('complete')) {
-              status = 'completed'
-            } else if (elemText.toLowerCase().includes('stumps')) {
-              status = 'live'
-            }
-            
-            // Extract series/tournament info
-            let series = 'Cricket Match'
-            const seriesPatterns = [
-              /(T20\s*World\s*Cup[^,\n]*)/i,
-              /(World\s*Cup[^,\n]*)/i,
-              /(Test\s*Series[^,\n]*)/i,
-              /(ODI\s*Series[^,\n]*)/i,
-              /(T20I?\s*Series[^,\n]*)/i,
-              /(Major\s*League[^,\n]*)/i,
-              /([A-Za-z\s]+\s*tour\s*of\s*[A-Za-z\s]+)/i,
-              /([A-Za-z\s]+\s*vs\s*[A-Za-z\s]+\s*\d{4})/i
-            ]
-            
-            for (const pattern of seriesPatterns) {
-              const seriesMatch = elemText.match(pattern)
-              if (seriesMatch) {
-                series = seriesMatch[1].trim()
-                break
-              }
-            }
-            
-            // Extract venue
-            let venue = 'Stadium'
-            const venuePatterns = [
-              /([A-Za-z\s]+(?:Ground|Stadium|Oval|Park)[^,\n]*)/i,
-              /(Lord's[^,\n]*)/i,
-              /(MCG|SCG|Wankhede|Eden Gardens)/i
-            ]
-            
-            for (const pattern of venuePatterns) {
-              const venueMatch = elemText.match(pattern)
-              if (venueMatch) {
-                venue = venueMatch[1].trim()
-                break
-              }
-            }
-            
-            // Extract commentary/result
-            let commentary = 'Match in progress...'
-            const commentaryPatterns = [
-              /(.*won\s+by\s+\d+\s+(?:runs?|wickets?)[^,\n]*)/i,
-              /(.*need\s+\d+\s+runs?[^,\n]*)/i,
-              /(Day\s+\d+[^,\n]*)/i,
-              /(Stumps[^,\n]*)/i,
-              /(Innings\s+Break[^,\n]*)/i
-            ]
-            
-            for (const pattern of commentaryPatterns) {
-              const commentaryMatch = elemText.match(pattern)
-              if (commentaryMatch) {
-                commentary = commentaryMatch[1].trim()
-                break
-              }
-            }
-            
-            // Create match object
-            const match = {
-              id: uuidv4(),
-              status: status,
-              series: series,
-              matchType: getMatchTypeFromText(elemText),
-              format: getFormatFromText(elemText),
-              venue: venue,
-              team1: {
-                name: expandTeamName(team1),
-                code: team1.length <= 4 ? team1.toUpperCase() : team1.substring(0, 3).toUpperCase(),
-                score: scores[0] || 'N/A',
-                overs: extractOversFromScore(scores[0]) || '0'
-              },
-              team2: {
-                name: expandTeamName(team2),
-                code: team2.length <= 4 ? team2.toUpperCase() : team2.substring(0, 3).toUpperCase(),
-                score: scores[1] || 'N/A',
-                overs: extractOversFromScore(scores[1]) || '0'
-              },
-              commentary: commentary,
-              toss: 'Toss details available soon',
-              timeAgo: status === 'live' ? 'Live' : 'Recently',
-              keyStats: generateKeyStatsFromText(elemText, status),
-              result: status === 'completed' ? commentary : null
-            }
-            
-            matches.push(match)
-            console.log(`✅ Found match: ${team1} vs ${team2} - ${status} (${series})`)
-          }
-        } catch (err) {
-          console.error('Error parsing element:', err)
+          console.log(`✅ Scraped: ${team1} vs ${team2} (${status})`)
         }
-      })
-      
-      if (matches.length > 0) {
-        console.log(`Found ${matches.length} matches using selector: ${selector}`)
-        break
       }
     }
     
