@@ -433,82 +433,249 @@ function generateKeyStats(score1, score2, status) {
 
 async function scrapeCricbuzzRecentMatches() {
   try {
-    console.log('Returning recent matches...')
+    console.log('Scraping REAL Cricbuzz recent matches...')
     
-    const recentMatches = [
-      {
-        id: uuidv4(),
-        series: 'Major League Cricket 2025 - Final',
-        date: 'Today',
-        team1: { name: 'MI New York', score: '180/7 (20)' },
-        team2: { name: 'Washington Freedom', score: '175/5 (20)' },
-        result: 'MI New York won by 5 runs'
-      },
-      {
-        id: uuidv4(),
-        series: 'Major League Cricket 2025 - Semi Final',
-        date: 'Yesterday',
-        team1: { name: 'Guyana Amazon Warriors', score: '165/8 (20)' },
-        team2: { name: 'Delhi Capitals', score: '158/9 (20)' },
-        result: 'Guyana Amazon Warriors won by 7 runs'
-      },
-      {
-        id: uuidv4(),
-        series: 'Big Bash League 2025',
-        date: '2 days ago',
-        team1: { name: 'Sydney Sixers', score: '195/4 (20)' },
-        team2: { name: 'Melbourne Stars', score: '178/8 (20)' },
-        result: 'Sydney Sixers won by 17 runs'
-      }
+    // Try multiple URLs for recent matches
+    const urls = [
+      'https://www.cricbuzz.com/cricket-schedule/recent-matches',
+      'https://www.cricbuzz.com/'
     ]
     
-    return recentMatches
+    for (const url of urls) {
+      console.log(`Fetching: ${url}`)
+      
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5',
+          'Cache-Control': 'no-cache'
+        }
+      })
+      
+      if (!response.ok) {
+        console.log(`Failed to fetch ${url}:`, response.status)
+        continue
+      }
+      
+      const html = await response.text()
+      const $ = cheerio.load(html)
+      const matches = []
+      
+      // Look for completed matches
+      const completedSelectors = [
+        '.cb-mtch-lst-itm',
+        '.cb-schdl .cb-col-100',
+        '.cb-srs-mtchs .cb-col-100'
+      ]
+      
+      for (const selector of completedSelectors) {
+        $(selector).each((index, element) => {
+          if (matches.length >= 6) return false
+          
+          const $elem = $(element)
+          const elemText = $elem.text()
+          
+          // Look for "Complete" or "won by" in the text
+          if (elemText.toLowerCase().includes('complete') || 
+              elemText.toLowerCase().includes('won by') ||
+              elemText.toLowerCase().includes('result')) {
+            
+            // Extract team vs team
+            const vsPattern = /([A-Z]{2,4})\s+vs\s+([A-Z]{2,4})|([A-Za-z\s]+)\s+vs\s+([A-Za-z\s]+)/i
+            const vsMatch = elemText.match(vsPattern)
+            
+            if (vsMatch) {
+              const team1 = (vsMatch[1] || vsMatch[3])?.trim()
+              const team2 = (vsMatch[2] || vsMatch[4])?.trim()
+              
+              if (team1 && team2 && team1.length > 1 && team2.length > 1) {
+                // Extract result
+                const resultPattern = /(.*won\s+by\s+\d+\s+(?:runs?|wickets?)[^,\n]*)/i
+                const resultMatch = elemText.match(resultPattern)
+                
+                // Extract scores
+                const scorePattern = /(\d+\/\d+\s*\(\d+\)|\d+\/\d+)/g
+                const scores = elemText.match(scorePattern) || []
+                
+                // Extract series info
+                let series = 'Recent Match'
+                const seriesPatterns = [
+                  /(Test\s*Series[^,\n]*)/i,
+                  /(T20\s*Series[^,\n]*)/i,
+                  /(ODI\s*Series[^,\n]*)/i,
+                  /([A-Za-z\s]+\s*vs\s*[A-Za-z\s]+\s*\d{4})/i
+                ]
+                
+                for (const pattern of seriesPatterns) {
+                  const seriesMatch = elemText.match(pattern)
+                  if (seriesMatch) {
+                    series = seriesMatch[1].trim()
+                    break
+                  }
+                }
+                
+                matches.push({
+                  id: uuidv4(),
+                  series: series,
+                  date: 'Recently',
+                  team1: {
+                    name: expandTeamName(team1),
+                    score: scores[0] || 'N/A'
+                  },
+                  team2: {
+                    name: expandTeamName(team2),
+                    score: scores[1] || 'N/A'
+                  },
+                  result: resultMatch ? resultMatch[1].trim() : `${expandTeamName(team1)} vs ${expandTeamName(team2)} - Complete`
+                })
+                
+                console.log(`✅ Found recent match: ${team1} vs ${team2}`)
+              }
+            }
+          }
+        })
+        
+        if (matches.length > 0) break
+      }
+      
+      if (matches.length > 0) {
+        console.log(`✅ Found ${matches.length} recent matches from ${url}`)
+        return matches
+      }
+    }
+    
+    console.log('No recent matches found in scraping')
+    return [] // Return empty array instead of mock data
     
   } catch (error) {
-    console.error('Error in recent matches:', error)
-    return createMockRecentMatches()
+    console.error('Error scraping recent matches:', error)
+    return [] // Return empty array instead of mock data
   }
 }
 
 async function scrapeCricbuzzUpcomingMatches() {
   try {
-    console.log('Returning upcoming matches...')
+    console.log('Scraping REAL Cricbuzz upcoming matches...')
     
-    const upcomingMatches = [
-      {
-        id: uuidv4(),
-        series: 'Zimbabwe vs South Africa, 2025 - 1st Test',
-        dateTime: 'Today, 2:30 PM GMT',
-        timeUntil: '2 hours',
-        venue: 'Harare Sports Club',
-        team1: { name: 'Zimbabwe', code: 'ZIM' },
-        team2: { name: 'South Africa', code: 'RSA' }
-      },
-      {
-        id: uuidv4(),
-        series: 'Bangladesh vs Sri Lanka - 2nd T20I',
-        dateTime: 'Tomorrow, 1:00 PM GMT', 
-        timeUntil: '1 day',
-        venue: 'Shere Bangla National Stadium',
-        team1: { name: 'Bangladesh', code: 'BAN' },
-        team2: { name: 'Sri Lanka', code: 'SL' }
-      },
-      {
-        id: uuidv4(),
-        series: 'Pakistan vs New Zealand - 1st ODI',
-        dateTime: 'Dec 20, 10:30 AM GMT',
-        timeUntil: '3 days',
-        venue: 'National Stadium, Karachi',
-        team1: { name: 'Pakistan', code: 'PAK' },
-        team2: { name: 'New Zealand', code: 'NZ' }
-      }
+    const urls = [
+      'https://www.cricbuzz.com/cricket-schedule/upcoming-matches',
+      'https://www.cricbuzz.com/'
     ]
     
-    return upcomingMatches
+    for (const url of urls) {
+      console.log(`Fetching: ${url}`)
+      
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Cache-Control': 'no-cache'
+        }
+      })
+      
+      if (!response.ok) {
+        console.log(`Failed to fetch ${url}:`, response.status)
+        continue
+      }
+      
+      const html = await response.text()
+      const $ = cheerio.load(html)
+      const matches = []
+      
+      // Look for upcoming/preview matches
+      const upcomingSelectors = [
+        '.cb-mtch-lst-itm',
+        '.cb-schdl .cb-col-100',
+        '.cb-srs-mtchs .cb-col-100'
+      ]
+      
+      for (const selector of upcomingSelectors) {
+        $(selector).each((index, element) => {
+          if (matches.length >= 6) return false
+          
+          const $elem = $(element)
+          const elemText = $elem.text()
+          
+          // Look for "Preview" or upcoming keywords
+          if (elemText.toLowerCase().includes('preview') || 
+              elemText.toLowerCase().includes('today') ||
+              elemText.toLowerCase().includes('tomorrow') ||
+              elemText.toLowerCase().includes('upcoming')) {
+            
+            // Extract team vs team
+            const vsPattern = /([A-Z]{2,4})\s+vs\s+([A-Z]{2,4})|([A-Za-z\s]+)\s+vs\s+([A-Za-z\s]+)/i
+            const vsMatch = elemText.match(vsPattern)
+            
+            if (vsMatch) {
+              const team1 = (vsMatch[1] || vsMatch[3])?.trim()
+              const team2 = (vsMatch[2] || vsMatch[4])?.trim()
+              
+              if (team1 && team2 && team1.length > 1 && team2.length > 1) {
+                // Extract timing
+                const timePattern = /(Today|Tomorrow|\d{1,2}:\d{2}|GMT|IST|AM|PM)/i
+                const timeMatch = elemText.match(timePattern)
+                
+                // Extract venue
+                let venue = 'Stadium'
+                const venuePattern = /([A-Za-z\s]+(?:Ground|Stadium|Oval))/i
+                const venueMatch = elemText.match(venuePattern)
+                if (venueMatch) venue = venueMatch[1].trim()
+                
+                // Extract series
+                let series = 'Upcoming Match'
+                const seriesPatterns = [
+                  /(Test[^,\n]*)/i,
+                  /(T20[^,\n]*)/i,
+                  /(ODI[^,\n]*)/i,
+                  /([A-Za-z\s]+\s*vs\s*[A-Za-z\s]+\s*\d{4})/i
+                ]
+                
+                for (const pattern of seriesPatterns) {
+                  const seriesMatch = elemText.match(pattern)
+                  if (seriesMatch) {
+                    series = seriesMatch[1].trim()
+                    break
+                  }
+                }
+                
+                matches.push({
+                  id: uuidv4(),
+                  series: series,
+                  dateTime: timeMatch ? timeMatch[1] : 'Soon',
+                  timeUntil: calculateTimeUntil(timeMatch ? timeMatch[1] : ''),
+                  venue: venue,
+                  team1: {
+                    name: expandTeamName(team1),
+                    code: team1.length <= 4 ? team1.toUpperCase() : team1.substring(0, 3).toUpperCase()
+                  },
+                  team2: {
+                    name: expandTeamName(team2),
+                    code: team2.length <= 4 ? team2.toUpperCase() : team2.substring(0, 3).toUpperCase()
+                  }
+                })
+                
+                console.log(`✅ Found upcoming match: ${team1} vs ${team2}`)
+              }
+            }
+          }
+        })
+        
+        if (matches.length > 0) break
+      }
+      
+      if (matches.length > 0) {
+        console.log(`✅ Found ${matches.length} upcoming matches from ${url}`)
+        return matches
+      }
+    }
+    
+    console.log('No upcoming matches found in scraping')
+    return [] // Return empty array instead of mock data
     
   } catch (error) {
-    console.error('Error in upcoming matches:', error)
-    return createMockUpcomingMatches()
+    console.error('Error scraping upcoming matches:', error)
+    return [] // Return empty array instead of mock data
   }
 }
 
