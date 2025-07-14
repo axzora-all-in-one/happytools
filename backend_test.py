@@ -681,6 +681,241 @@ class BackendTester:
         except Exception as e:
             self.log_test("Malformed JSON", True, f"Exception correctly caught: {str(e)}")
     
+    def test_cricket_functionality(self):
+        """Test all cricket API endpoints"""
+        print("\n" + "="*80)
+        print("TESTING CRICKET API FUNCTIONALITY")
+        print("="*80)
+        
+        # Test 1: Live Matches endpoint
+        print("\n--- Testing Live Matches Endpoint ---")
+        try:
+            response = requests.get(f"{BASE_URL}/cricket/live-matches", headers=HEADERS, timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success') and 'matches' in data and 'lastUpdated' in data:
+                    matches = data['matches']
+                    if isinstance(matches, list) and len(matches) > 0:
+                        # Check first match structure
+                        match = matches[0]
+                        required_fields = ['id', 'status', 'series', 'team1', 'team2', 'venue']
+                        if all(field in match for field in required_fields):
+                            team1 = match['team1']
+                            team2 = match['team2']
+                            if 'name' in team1 and 'score' in team1 and 'name' in team2 and 'score' in team2:
+                                self.log_test("Live Matches Endpoint", True, f"Retrieved {len(matches)} live matches with proper structure")
+                            else:
+                                self.log_test("Live Matches Endpoint", False, "Team data structure incomplete")
+                        else:
+                            self.log_test("Live Matches Endpoint", False, f"Missing required fields in match data")
+                    else:
+                        self.log_test("Live Matches Endpoint", True, "No live matches currently (acceptable)")
+                else:
+                    self.log_test("Live Matches Endpoint", False, f"Invalid response structure: {data}")
+            else:
+                self.log_test("Live Matches Endpoint", False, f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Live Matches Endpoint", False, f"Exception: {str(e)}")
+        
+        # Test 2: Recent Matches endpoint
+        print("\n--- Testing Recent Matches Endpoint ---")
+        try:
+            response = requests.get(f"{BASE_URL}/cricket/recent-matches", headers=HEADERS, timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success') and 'matches' in data and 'lastUpdated' in data:
+                    matches = data['matches']
+                    if isinstance(matches, list) and len(matches) > 0:
+                        # Check first match structure
+                        match = matches[0]
+                        required_fields = ['id', 'series', 'team1', 'team2', 'result']
+                        if all(field in match for field in required_fields):
+                            team1 = match['team1']
+                            team2 = match['team2']
+                            if 'name' in team1 and 'score' in team1 and 'name' in team2 and 'score' in team2:
+                                self.log_test("Recent Matches Endpoint", True, f"Retrieved {len(matches)} recent matches with proper structure")
+                            else:
+                                self.log_test("Recent Matches Endpoint", False, "Team data structure incomplete")
+                        else:
+                            self.log_test("Recent Matches Endpoint", False, f"Missing required fields in match data")
+                    else:
+                        self.log_test("Recent Matches Endpoint", True, "No recent matches found (acceptable)")
+                else:
+                    self.log_test("Recent Matches Endpoint", False, f"Invalid response structure: {data}")
+            else:
+                self.log_test("Recent Matches Endpoint", False, f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Recent Matches Endpoint", False, f"Exception: {str(e)}")
+        
+        # Test 3: Upcoming Matches endpoint
+        print("\n--- Testing Upcoming Matches Endpoint ---")
+        try:
+            response = requests.get(f"{BASE_URL}/cricket/upcoming-matches", headers=HEADERS, timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success') and 'matches' in data and 'lastUpdated' in data:
+                    matches = data['matches']
+                    if isinstance(matches, list) and len(matches) > 0:
+                        # Check first match structure
+                        match = matches[0]
+                        required_fields = ['id', 'series', 'team1', 'team2', 'dateTime', 'venue']
+                        if all(field in match for field in required_fields):
+                            team1 = match['team1']
+                            team2 = match['team2']
+                            if 'name' in team1 and 'code' in team1 and 'name' in team2 and 'code' in team2:
+                                self.log_test("Upcoming Matches Endpoint", True, f"Retrieved {len(matches)} upcoming matches with proper structure")
+                            else:
+                                self.log_test("Upcoming Matches Endpoint", False, "Team data structure incomplete")
+                        else:
+                            self.log_test("Upcoming Matches Endpoint", False, f"Missing required fields in match data")
+                    else:
+                        self.log_test("Upcoming Matches Endpoint", True, "No upcoming matches found (acceptable)")
+                else:
+                    self.log_test("Upcoming Matches Endpoint", False, f"Invalid response structure: {data}")
+            else:
+                self.log_test("Upcoming Matches Endpoint", False, f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Upcoming Matches Endpoint", False, f"Exception: {str(e)}")
+        
+        # Test 4: Player Stats endpoint
+        print("\n--- Testing Player Stats Endpoint ---")
+        try:
+            response = requests.get(f"{BASE_URL}/cricket/player-stats", headers=HEADERS, timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success') and 'stats' in data and 'lastUpdated' in data:
+                    stats = data['stats']
+                    if isinstance(stats, list) and len(stats) > 0:
+                        # Check first player structure
+                        player = stats[0]
+                        required_fields = ['id', 'name', 'team', 'role', 'batting', 'bowling', 'matches']
+                        if all(field in player for field in required_fields):
+                            batting = player['batting']
+                            bowling = player['bowling']
+                            if 'average' in batting and 'runs' in batting and 'average' in bowling and 'wickets' in bowling:
+                                self.log_test("Player Stats Endpoint", True, f"Retrieved {len(stats)} player stats with proper structure")
+                            else:
+                                self.log_test("Player Stats Endpoint", False, "Player stats structure incomplete")
+                        else:
+                            self.log_test("Player Stats Endpoint", False, f"Missing required fields in player data")
+                    else:
+                        self.log_test("Player Stats Endpoint", False, "No player stats found")
+                else:
+                    self.log_test("Player Stats Endpoint", False, f"Invalid response structure: {data}")
+            else:
+                self.log_test("Player Stats Endpoint", False, f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Player Stats Endpoint", False, f"Exception: {str(e)}")
+        
+        # Test 5: Match Details endpoint (with valid ID)
+        print("\n--- Testing Match Details Endpoint ---")
+        try:
+            # First get a match ID from live matches
+            live_response = requests.get(f"{BASE_URL}/cricket/live-matches", headers=HEADERS, timeout=30)
+            match_id = "test-match-123"  # Default test ID
+            
+            if live_response.status_code == 200:
+                live_data = live_response.json()
+                if live_data.get('success') and 'matches' in live_data and len(live_data['matches']) > 0:
+                    match_id = live_data['matches'][0].get('id', match_id)
+            
+            response = requests.get(f"{BASE_URL}/cricket/match-details?id={match_id}", headers=HEADERS, timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success') and 'match' in data and 'lastUpdated' in data:
+                    match = data['match']
+                    if match and 'id' in match and 'series' in match and 'team1' in match and 'team2' in match:
+                        self.log_test("Match Details Endpoint", True, f"Retrieved match details for ID: {match_id}")
+                    else:
+                        self.log_test("Match Details Endpoint", False, "Match details structure incomplete")
+                else:
+                    self.log_test("Match Details Endpoint", False, f"Invalid response structure: {data}")
+            else:
+                self.log_test("Match Details Endpoint", False, f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Match Details Endpoint", False, f"Exception: {str(e)}")
+        
+        # Test 6: Match Details endpoint (missing ID)
+        print("\n--- Testing Match Details Endpoint (Missing ID) ---")
+        try:
+            response = requests.get(f"{BASE_URL}/cricket/match-details", headers=HEADERS, timeout=30)
+            
+            if response.status_code == 400:
+                data = response.json()
+                if data.get('success') == False and 'Match ID is required' in data.get('error', ''):
+                    self.log_test("Match Details (Missing ID)", True, "Correctly validates missing match ID")
+                else:
+                    self.log_test("Match Details (Missing ID)", False, f"Unexpected error message: {data}")
+            else:
+                self.log_test("Match Details (Missing ID)", False, f"Expected 400, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Match Details (Missing ID)", False, f"Exception: {str(e)}")
+        
+        # Test 7: Data Quality Check - Verify cricket data contains realistic information
+        print("\n--- Testing Cricket Data Quality ---")
+        try:
+            response = requests.get(f"{BASE_URL}/cricket/live-matches", headers=HEADERS, timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success') and 'matches' in data:
+                    matches = data['matches']
+                    if len(matches) > 0:
+                        match = matches[0]
+                        # Check for realistic cricket data
+                        has_teams = 'team1' in match and 'team2' in match
+                        has_series = 'series' in match and match['series']
+                        has_venue = 'venue' in match and match['venue']
+                        has_commentary = 'commentary' in match
+                        
+                        if has_teams and has_series and has_venue:
+                            self.log_test("Cricket Data Quality", True, "Cricket data contains realistic match information")
+                        else:
+                            self.log_test("Cricket Data Quality", False, "Cricket data missing essential information")
+                    else:
+                        # Check recent matches for data quality
+                        recent_response = requests.get(f"{BASE_URL}/cricket/recent-matches", headers=HEADERS, timeout=30)
+                        if recent_response.status_code == 200:
+                            recent_data = recent_response.json()
+                            if recent_data.get('success') and len(recent_data.get('matches', [])) > 0:
+                                self.log_test("Cricket Data Quality", True, "Cricket data available in recent matches")
+                            else:
+                                self.log_test("Cricket Data Quality", True, "No current matches but endpoints working (acceptable)")
+                        else:
+                            self.log_test("Cricket Data Quality", False, "No data available in any endpoint")
+                else:
+                    self.log_test("Cricket Data Quality", False, "Invalid data structure")
+            else:
+                self.log_test("Cricket Data Quality", False, f"HTTP {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Cricket Data Quality", False, f"Exception: {str(e)}")
+        
+        # Test 8: Error Handling - Test with invalid endpoints
+        print("\n--- Testing Cricket Error Handling ---")
+        try:
+            response = requests.get(f"{BASE_URL}/cricket/invalid-endpoint", headers=HEADERS, timeout=30)
+            
+            # Should return 404 or similar error for invalid cricket endpoint
+            if response.status_code >= 400:
+                self.log_test("Cricket Error Handling", True, f"Correctly handles invalid cricket endpoint with {response.status_code}")
+            else:
+                self.log_test("Cricket Error Handling", False, f"Should return error for invalid endpoint, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Cricket Error Handling", True, f"Exception correctly handled: {str(e)}")
+    
     def run_all_tests(self):
         """Run all test suites"""
         print("🚀 STARTING COMPREHENSIVE BACKEND TESTING")
