@@ -56,14 +56,14 @@ async function scrapeCricbuzzLiveMatches() {
       }
     }
     
-    // Method 1: Look for current live match cards with specific selectors
-    const liveSelectors = [
-      '.cb-col-100.cb-col .cb-mtch-crd',
-      '.cb-mtch-lst-itm',
-      '.cb-scr-hdr-rw',
-      '.cb-lv-scr-mtch-hdr',
-      '.cb-lv-scr',
-      '[data-match-id]'
+    // Look for live cricket patterns in the text
+    const cricketPatterns = [
+      // Pattern for team codes
+      /([A-Z]{3,4})\s+vs\s+([A-Z]{3,4}).*?(\d+\/\d+|\d+-\d+)/g,
+      // Pattern for full country names  
+      /(India|England|Australia|Pakistan|Bangladesh|Sri Lanka|South Africa|New Zealand|West Indies|Zimbabwe|Afghanistan|Ireland)\s+vs\s+(India|England|Australia|Pakistan|Bangladesh|Sri Lanka|South Africa|New Zealand|West Indies|Zimbabwe|Afghanistan|Ireland)/gi,
+      // Pattern for match status
+      /(live|complete|stumps|innings break)/gi
     ]
     
     for (const selector of liveSelectors) {
