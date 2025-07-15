@@ -3836,23 +3836,28 @@ IMPORTANT: Return ONLY the JSON workflow, no explanations or markdown formatting
     return handleCORS(NextResponse.json(
       { error: `Route ${route} not found` }, 
       { status: 404 }
-    ))
+    ));
 
   } catch (error) {
-    console.error('API Error:', error)
+    console.error('API Error:', error);
     return handleCORS(NextResponse.json(
       { error: "Internal server error" }, 
       { status: 500 }
-    ))
+    ));
   }
 }
 
 // Export all HTTP methods
-export const GET = handleRoute
-export const POST = handleRoute
-export const PUT = handleRoute
-export const DELETE = handleRoute
-export const PATCH = handleRoute
+export const GET = handleRoute;
+export const POST = handleRoute;
+export const PUT = handleRoute;
+export const DELETE = handleRoute;
+export const PATCH = handleRoute;
+
+// OPTIONS handler for CORS
+export async function OPTIONS() {
+  return handleCORS(new NextResponse(null, { status: 200 }));
+}
 
 // OPTIONS handler for CORS
 export async function OPTIONS() {
