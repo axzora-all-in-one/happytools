@@ -1345,11 +1345,6 @@ function handleCORS(response) {
   return response
 }
 
-// OPTIONS handler for CORS
-export async function OPTIONS() {
-  return handleCORS(new NextResponse(null, { status: 200 }))
-}
-
 // Helper function to create basic workflow template
 function createBasicWorkflowTemplate(platform, name, description) {
   if (platform === 'n8n') {
