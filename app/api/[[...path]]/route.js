@@ -3824,11 +3824,11 @@ IMPORTANT: Return ONLY the JSON workflow, no explanations or markdown formatting
         }))
         
       } catch (error) {
-        console.error('Error generating workflow:', error)
+        console.error('Error generating workflow:', error);
         return handleCORS(NextResponse.json(
           { error: error.message || 'Failed to generate workflow' },
           { status: 500 }
-        ))
+        ));
       }
     }
 
