@@ -272,17 +272,8 @@ function extractCommentaryFromLine(line) {
   }
   return null
 }
-    
-    console.log(`✅ Total REAL matches scraped: ${matches.length}`)
-    
-    // Return real scraped data or empty array (no mock fallback)
-    return matches.length > 0 ? matches : []
-    
-  } catch (error) {
-    console.error('Error scraping REAL live matches:', error)
-    return [] // Return empty array instead of mock data
-  }
-}
+
+async function scrapeCricbuzzRecentMatches() {
 
 // Helper functions for better parsing
 function getMatchTypeFromText(text) {
