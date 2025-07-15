@@ -1023,9 +1023,6 @@ function createMockPlayerStats() {
     }
   ]
 }
-import { getClient } from '@/lib/apollo-client'
-import { GET_AI_TOOLS, SEARCH_AI_TOOLS, isAITool } from '@/lib/producthunt'
-import TargetedAiToolsScraper from '@/lib/scrapers/targeted-aitools-scraper'
 
 // MongoDB connection
 let client
