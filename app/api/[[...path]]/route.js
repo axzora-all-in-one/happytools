@@ -3858,8 +3858,3 @@ export const PATCH = handleRoute;
 export async function OPTIONS() {
   return handleCORS(new NextResponse(null, { status: 200 }));
 }
-
-// OPTIONS handler for CORS
-export async function OPTIONS() {
-  return handleCORS(new NextResponse(null, { status: 200 }))
-}
