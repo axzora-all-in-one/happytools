@@ -2,6 +2,9 @@ import { MongoClient } from 'mongodb'
 import { v4 as uuidv4 } from 'uuid'
 import { NextResponse } from 'next/server'
 import * as cheerio from 'cheerio'
+import { getClient } from '@/lib/apollo-client'
+import { GET_AI_TOOLS, SEARCH_AI_TOOLS, isAITool } from '@/lib/producthunt'
+import TargetedAiToolsScraper from '@/lib/scrapers/targeted-aitools-scraper'
 
 // Cricbuzz scraping functions with real-time data
 async function scrapeCricbuzzLiveMatches() {
