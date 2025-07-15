@@ -1208,6 +1208,117 @@ function countNodes(workflowJson, platform) {
   }
 }
 
+// Helper function to fetch AWS tools data
+async function fetchAWSToolsData() {
+  try {
+    console.log('Fetching AWS tools data...')
+    
+    const response = await fetch('https://yw5sjxzhx6.execute-api.ap-southeast-2.amazonaws.com/prod/tools', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'HappyTools/1.0'
+      }
+    })
+    
+    if (!response.ok) {
+      console.error('Failed to fetch AWS tools:', response.status)
+      return []
+    }
+    
+    const awsData = await response.json()
+    console.log(`✅ Fetched ${awsData.length} tools from AWS`)
+    
+    // Transform AWS data to match our schema
+    const transformedTools = awsData.map(tool => ({
+      id: tool.tool_id,
+      tool_id: tool.tool_id,
+      name: tool.name || 'Unknown Tool',
+      tagline: tool.tagline || '',
+      description: tool.description || '',
+      url: tool.url || '',
+      category: mapTopicsToCategory(tool.topics || []),
+      topics: tool.topics || [],
+      votes: 0, // AWS doesn't provide votes
+      rating: 0, // AWS doesn't provide rating
+      featured_at: tool.created_at || new Date().toISOString(),
+      created_at: tool.created_at || new Date().toISOString(),
+      source: 'aws-dynamodb',
+      maker: 'Product Hunt', // Default maker
+      website: extractWebsiteFromUrl(tool.url || ''),
+      launch_date: tool.created_at || new Date().toISOString(),
+      is_featured: true,
+      badge: 'New',
+      thumbnail: generateThumbnailUrl(tool.name || 'Tool')
+    }))
+    
+    return transformedTools
+    
+  } catch (error) {
+    console.error('Error fetching AWS tools:', error)
+    return []
+  }
+}
+
+// Helper function to map topics to categories
+function mapTopicsToCategory(topics) {
+  const topicMap = {
+    'Artificial Intelligence': 'AI & Machine Learning',
+    'Design Tools': 'Design',
+    'Marketing': 'Marketing',
+    'Developer Tools': 'Development',
+    'Sales': 'Sales',
+    'SaaS': 'SaaS',
+    'Audio': 'Audio & Music',
+    'No-Code': 'No-Code',
+    'Social Media': 'Social Media',
+    'Bots': 'AI & Machine Learning',
+    'Community': 'Community',
+    'reddit': 'Social Media'
+  }
+  
+  for (const topic of topics) {
+    if (topicMap[topic]) {
+      return topicMap[topic]
+    }
+  }
+  
+  return 'Other'
+}
+
+// Helper function to extract website from URL
+function extractWebsiteFromUrl(url) {
+  try {
+    const urlObj = new URL(url)
+    return urlObj.hostname
+  } catch (error) {
+    return 'producthunt.com'
+  }
+}
+
+// Helper function to generate thumbnail URL
+function generateThumbnailUrl(name) {
+  // Generate a placeholder thumbnail based on the tool name
+  const encodedName = encodeURIComponent(name)
+  return `https://via.placeholder.com/400x300/4F46E5/FFFFFF?text=${encodedName}`
+}
+
+// Helper function to remove duplicate tools
+function removeDuplicateTools(tools) {
+  const seen = new Set()
+  const uniqueTools = []
+  
+  for (const tool of tools) {
+    const key = tool.tool_id || tool.id || tool.name
+    if (!seen.has(key)) {
+      seen.add(key)
+      uniqueTools.push(tool)
+    }
+  }
+  
+  return uniqueTools
+}
+
 // Helper function to transform Product Hunt data to our format
 function transformPHToolToDBFormat(phTool) {
   return {
