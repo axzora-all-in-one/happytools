@@ -1249,72 +1249,117 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ message: "Hello World" }))
     }
 
-    // AI Tools endpoints - GET /api/ai-tools
-    if (route === '/ai-tools' && method === 'GET') {
-      const searchParams = new URL(request.url).searchParams;
-      const page = parseInt(searchParams.get('page') || '1');
-      const limit = parseInt(searchParams.get('limit') || '12');
-      const search = searchParams.get('search') || '';
-      const category = searchParams.get('category') || '';
-      const source = searchParams.get('source') || 'all';
-      const sort = searchParams.get('sort') || 'featured_at';
+    // AI Tools endpoints
+    if (route.startsWith('/ai-tools')) {
+      const toolsRoute = route.replace('/ai-tools', '');
       
-      const skip = (page - 1) * limit;
-      
-      // Build query
-      let query = {};
-      if (search) {
-        query.$or = [
-          { name: { $regex: search, $options: 'i' } },
-          { tagline: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } }
-        ];
-      }
-      if (category && category !== 'all') {
-        query.category = { $regex: category, $options: 'i' };
-      }
-      if (source !== 'all') {
-        query.source = source;
-      }
-      
-      // Build sort object
-      let sortObj = {};
-      switch (sort) {
-        case 'votes':
-          sortObj = { votes: -1 };
-          break;
-        case 'name':
-          sortObj = { name: 1 };
-          break;
-        case 'rating':
-          sortObj = { rating: -1 };
-          break;
-        default:
-          sortObj = { featured_at: -1 };
-      }
-      
-      const aiTools = await db.collection('ai_tools')
-        .find(query)
-        .sort(sortObj)
-        .skip(skip)
-        .limit(limit)
-        .toArray();
-      
-      const total = await db.collection('ai_tools').countDocuments(query);
-      
-      // Remove MongoDB's _id field from response
-      const cleanedTools = aiTools.map(({ _id, ...rest }) => rest);
-      
-      return handleCORS(NextResponse.json({
-        tools: cleanedTools,
-        pagination: {
-          page,
-          limit,
-          total,
-          hasMore: skip + limit < total
+      // Get AI tools endpoint - GET /api/ai-tools
+      if (toolsRoute === '' && method === 'GET') {
+        try {
+          const url = new URL(request.url);
+          const page = parseInt(url.searchParams.get('page') || '1');
+          const limit = parseInt(url.searchParams.get('limit') || '12');
+          const search = url.searchParams.get('search') || '';
+          const category = url.searchParams.get('category') || '';
+          const source = url.searchParams.get('source') || '';
+          const sort = url.searchParams.get('sort') || 'featured_at';
+          
+          const skip = (page - 1) * limit;
+          
+          // Build query
+          const query = {};
+          if (search) {
+            query.$or = [
+              { name: { $regex: search, $options: 'i' } },
+              { description: { $regex: search, $options: 'i' } },
+              { tagline: { $regex: search, $options: 'i' } }
+            ];
+          }
+          if (category) query.category = category;
+          if (source) query.source = source;
+          
+          // Build sort
+          const sortObj = {};
+          if (sort === 'featured_at') sortObj.featured_at = -1;
+          else if (sort === 'votes') sortObj.votes = -1;
+          else if (sort === 'name') sortObj.name = 1;
+          else if (sort === 'rating') sortObj.rating = -1;
+          else sortObj.featured_at = -1;
+          
+          // Fetch from database
+          const tools = await db.collection('ai_tools').find(query)
+            .sort(sortObj)
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+          
+          // Fetch fresh data from AWS API and merge
+          const awsTools = await fetchAWSToolsData();
+          
+          // Combine and deduplicate tools
+          const combinedTools = [...awsTools, ...tools];
+          const uniqueTools = removeDuplicateTools(combinedTools);
+          
+          // Apply pagination to combined results
+          const paginatedTools = uniqueTools.slice(skip, skip + limit);
+          
+          const totalCount = uniqueTools.length;
+          const totalPages = Math.ceil(totalCount / limit);
+          
+          return handleCORS(NextResponse.json({
+            tools: paginatedTools,
+            pagination: {
+              currentPage: page,
+              totalPages: totalPages,
+              totalCount: totalCount,
+              hasNextPage: page < totalPages,
+              hasPrevPage: page > 1
+            }
+          }));
+          
+        } catch (error) {
+          console.error('Error fetching AI tools:', error);
+          return handleCORS(NextResponse.json(
+            { error: 'Failed to fetch AI tools' },
+            { status: 500 }
+          ));
         }
-      }));
-    }
+      }
+
+      // Sync AWS tools endpoint - POST /api/ai-tools/sync-aws
+      if (toolsRoute === '/sync-aws' && method === 'POST') {
+        try {
+          const awsTools = await fetchAWSToolsData();
+          
+          // Store in database with AWS source
+          for (const tool of awsTools) {
+            await db.collection('ai_tools').updateOne(
+              { tool_id: tool.tool_id },
+              { 
+                $set: {
+                  ...tool,
+                  source: 'aws-dynamodb',
+                  synced_at: new Date()
+                }
+              },
+              { upsert: true }
+            );
+          }
+          
+          return handleCORS(NextResponse.json({
+            success: true,
+            message: `Synced ${awsTools.length} tools from AWS DynamoDB`,
+            count: awsTools.length
+          }));
+          
+        } catch (error) {
+          console.error('Error syncing AWS tools:', error);
+          return handleCORS(NextResponse.json(
+            { error: 'Failed to sync AWS tools' },
+            { status: 500 }
+          ));
+        }
+      }
 
     // AI Tools sync endpoint - POST /api/ai-tools/sync (Product Hunt)
     if (route === '/ai-tools/sync' && method === 'POST') {
