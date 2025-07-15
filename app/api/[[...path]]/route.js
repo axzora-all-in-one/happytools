@@ -3858,3 +3858,8 @@ export const POST = handleRoute
 export const PUT = handleRoute
 export const DELETE = handleRoute
 export const PATCH = handleRoute
+
+// OPTIONS handler for CORS
+export async function OPTIONS() {
+  return handleCORS(new NextResponse(null, { status: 200 }))
+}
