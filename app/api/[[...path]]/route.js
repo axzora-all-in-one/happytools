@@ -11,42 +11,148 @@ async function scrapeCricbuzzLiveMatches() {
   try {
     console.log('Fetching Cricbuzz live matches from API...')
     
-    
-    // Try to scrape from Cricbuzz
-    try {
-      const response = await fetch('https://www.cricbuzz.com/', {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.5',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        },
-        timeout: 5000
-      })
+    const response = await fetch('https://cricklive-score-api-6.onrender.com/api/cricbuzz/live-scores', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    })
     
     if (!response.ok) {
-      console.error('Failed to fetch Cricbuzz:', response.status, response.statusText)
-      throw new Error(`HTTP ${response.status}`)
+      console.error('Failed to fetch Cricbuzz API:', response.status, response.statusText)
+      return []
     }
     
-    const html = await response.text()
-    console.log('Successfully fetched Cricbuzz HTML, length:', html.length)
+    const apiData = await response.json()
+    console.log(`✅ Fetched ${apiData.data?.length || 0} matches from Cricbuzz API`)
     
-    const $ = cheerio.load(html)
-    const matches = []
+    // Transform API data to match our schema
+    const matches = apiData.data?.map(match => {
+      // Extract team names from matchVs
+      const teamNames = match.matchVs.split(' vs ')
+      const team1Name = teamNames[0]?.trim() || 'Team 1'
+      const team2Name = teamNames[1]?.split(',')[0]?.trim() || 'Team 2'
+      
+      // Determine match status
+      let status = 'upcoming'
+      if (match.Team1_score && match.Team2_score) {
+        if (match.description.toLowerCase().includes('won')) {
+          status = 'completed'
+        } else {
+          status = 'live'
+        }
+      }
+      
+      // Extract result from description
+      let result = null
+      let commentary = 'Match in progress...'
+      if (match.description.includes('won by')) {
+        const resultMatch = match.description.match(/([^.]*won by[^.]*)/i)
+        if (resultMatch) {
+          result = resultMatch[1].trim()
+          commentary = result
+        }
+      }
+      
+      // Extract series information
+      let series = match.matchType || 'Cricket Match'
+      if (match.description.includes('Global Super League')) {
+        series = 'Global Super League, 2025'
+      } else if (match.description.includes('T20 Blast')) {
+        series = 'T20 Blast 2025'
+      } else if (match.description.includes('tour of')) {
+        const tourMatch = match.description.match(/([^,]*tour of[^,]*)/i)
+        if (tourMatch) series = tourMatch[1].trim()
+      }
+      
+      // Extract venue
+      let venue = 'Cricket Ground'
+      if (match.description.includes('Providence Stadium')) {
+        venue = 'Providence Stadium, Guyana'
+      } else if (match.description.includes('Stadium')) {
+        const venueMatch = match.description.match(/([^,]*Stadium[^,]*)/i)
+        if (venueMatch) venue = venueMatch[1].trim()
+      }
+      
+      return {
+        id: uuidv4(),
+        status: status,
+        series: series,
+        matchType: getMatchTypeFromDescription(match.description),
+        format: getFormatFromDescription(match.description),
+        venue: venue,
+        team1: {
+          name: expandTeamName(team1Name),
+          code: team1Name.length <= 4 ? team1Name.toUpperCase() : team1Name.substring(0, 3).toUpperCase(),
+          score: match.Team1_score || 'TBC',
+          overs: extractOversFromScore(match.Team1_score) || '0'
+        },
+        team2: {
+          name: expandTeamName(team2Name),
+          code: team2Name.length <= 4 ? team2Name.toUpperCase() : team2Name.substring(0, 3).toUpperCase(),
+          score: match.Team2_score || 'TBC',
+          overs: extractOversFromScore(match.Team2_score) || '0'
+        },
+        commentary: commentary,
+        toss: 'Toss details available soon',
+        timeAgo: status === 'live' ? 'Live' : status === 'completed' ? 'Completed' : 'Upcoming',
+        keyStats: generateKeyStatsFromMatch(match, status),
+        result: result
+      }
+    }) || []
     
-    // Look for actual match data in script tags or data attributes
-    const scriptTags = $('script').get()
-    let matchData = null
+    console.log(`✅ Returning ${matches.length} live cricket matches`)
+    return matches
     
-    // Try to find JSON data in script tags
-    for (const script of scriptTags) {
-      const scriptContent = $(script).html()
-      if (scriptContent && scriptContent.includes('matches') && scriptContent.includes('teams')) {
-        try {
-          // Extract JSON data if present
-          const jsonMatch = scriptContent.match(/window\.__INITIAL_STATE__\s*=\s*({.*?});/)
+  } catch (error) {
+    console.error('Error fetching Cricbuzz live matches:', error)
+    return []
+  }
+}
+
+// Helper functions for cricket API data processing
+function getMatchTypeFromDescription(description) {
+  if (description.toLowerCase().includes('international')) return 'International'
+  if (description.toLowerCase().includes('domestic')) return 'Domestic'
+  if (description.toLowerCase().includes('league')) return 'League'
+  return 'Cricket'
+}
+
+function getFormatFromDescription(description) {
+  if (description.toLowerCase().includes('test')) return 'Test'
+  if (description.toLowerCase().includes('odi')) return 'ODI'
+  if (description.toLowerCase().includes('t20')) return 'T20'
+  return 'Cricket'
+}
+
+function generateKeyStatsFromMatch(match, status) {
+  const stats = []
+  
+  if (status === 'live') {
+    stats.push({ label: 'Status', value: 'Live' })
+    
+    // Extract overs from scores
+    const overs1 = extractOversFromScore(match.Team1_score)
+    const overs2 = extractOversFromScore(match.Team2_score)
+    
+    if (overs1 && overs1 !== '0') {
+      stats.push({ label: 'Overs', value: overs1 })
+    }
+  } else if (status === 'completed') {
+    stats.push({ label: 'Status', value: 'Completed' })
+    
+    // Extract margin of victory
+    if (match.description.includes('won by')) {
+      const marginMatch = match.description.match(/won by ([^,\n]*)/i)
+      if (marginMatch) {
+        stats.push({ label: 'Margin', value: marginMatch[1].trim() })
+      }
+    }
+  } else {
+    stats.push({ label: 'Status', value: 'Upcoming' })
+  }
+  
+  return stats
+}
           if (jsonMatch) {
             matchData = JSON.parse(jsonMatch[1])
             console.log('Found match data in script tag')
