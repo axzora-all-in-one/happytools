@@ -1671,7 +1671,7 @@ async function handleRoute(request, { params }) {
           
           const skip = (page - 1) * limit;
           
-          // Build query
+          // Build query for database
           const query = {};
           if (search) {
             query.$or = [
@@ -1692,18 +1692,24 @@ async function handleRoute(request, { params }) {
           else sortObj.featured_at = -1;
           
           // Fetch from database
-          const tools = await db.collection('ai_tools').find(query)
+          const dbTools = await db.collection('ai_tools').find(query)
             .sort(sortObj)
             .skip(skip)
             .limit(limit)
             .toArray();
           
-          // Fetch fresh data from AWS API and merge
-          const awsTools = await fetchAWSToolsData();
+          // Fetch fresh data from Product Hunt and aitools.fyi
+          const productHuntTools = await fetchProductHuntTools();
+          const aitoolsTools = await fetchAitoolsFyiTools();
           
-          // Combine and deduplicate tools
-          const combinedTools = [...awsTools, ...tools];
-          const uniqueTools = removeDuplicateTools(combinedTools);
+          // Combine tools - Product Hunt first (newest), then aitools.fyi, then database
+          const allTools = [...productHuntTools, ...aitoolsTools, ...dbTools];
+          
+          // Remove duplicates by tool name
+          const uniqueTools = removeDuplicateTools(allTools);
+          
+          // Sort by date (newest first)
+          uniqueTools.sort((a, b) => new Date(b.featured_at) - new Date(a.featured_at));
           
           // Apply pagination to combined results
           const paginatedTools = uniqueTools.slice(skip, skip + limit);
@@ -1731,19 +1737,19 @@ async function handleRoute(request, { params }) {
         }
       }
 
-      // Sync AWS tools endpoint - POST /api/ai-tools/sync-aws
-      if (toolsRoute === '/sync-aws' && method === 'POST') {
+      // Sync Product Hunt tools endpoint - POST /api/ai-tools/sync-producthunt
+      if (toolsRoute === '/sync-producthunt' && method === 'POST') {
         try {
-          const awsTools = await fetchAWSToolsData();
+          const productHuntTools = await fetchProductHuntTools();
           
-          // Store in database with AWS source
-          for (const tool of awsTools) {
+          // Store in database with Product Hunt source
+          for (const tool of productHuntTools) {
             await db.collection('ai_tools').updateOne(
-              { tool_id: tool.tool_id },
+              { name: tool.name },
               { 
                 $set: {
                   ...tool,
-                  source: 'aws-dynamodb',
+                  source: 'producthunt',
                   synced_at: new Date()
                 }
               },
@@ -1753,14 +1759,49 @@ async function handleRoute(request, { params }) {
           
           return handleCORS(NextResponse.json({
             success: true,
-            message: `Synced ${awsTools.length} tools from AWS DynamoDB`,
-            count: awsTools.length
+            message: `Synced ${productHuntTools.length} tools from Product Hunt`,
+            count: productHuntTools.length
           }));
           
         } catch (error) {
-          console.error('Error syncing AWS tools:', error);
+          console.error('Error syncing Product Hunt tools:', error);
           return handleCORS(NextResponse.json(
-            { error: 'Failed to sync AWS tools' },
+            { error: 'Failed to sync Product Hunt tools' },
+            { status: 500 }
+          ));
+        }
+      }
+
+      // Sync aitools.fyi endpoint - POST /api/ai-tools/sync-aitools
+      if (toolsRoute === '/sync-aitools' && method === 'POST') {
+        try {
+          const aitoolsTools = await fetchAitoolsFyiTools();
+          
+          // Store in database with aitools.fyi source
+          for (const tool of aitoolsTools) {
+            await db.collection('ai_tools').updateOne(
+              { name: tool.name },
+              { 
+                $set: {
+                  ...tool,
+                  source: 'aitools.fyi',
+                  synced_at: new Date()
+                }
+              },
+              { upsert: true }
+            );
+          }
+          
+          return handleCORS(NextResponse.json({
+            success: true,
+            message: `Synced ${aitoolsTools.length} tools from aitools.fyi`,
+            count: aitoolsTools.length
+          }));
+          
+        } catch (error) {
+          console.error('Error syncing aitools.fyi tools:', error);
+          return handleCORS(NextResponse.json(
+            { error: 'Failed to sync aitools.fyi tools' },
             { status: 500 }
           ));
         }
