@@ -1502,82 +1502,273 @@ function countNodes(workflowJson, platform) {
   }
 }
 
-// Helper function to fetch AWS tools data
-async function fetchAWSToolsData() {
+// Helper function to fetch Product Hunt tools data
+async function fetchProductHuntTools() {
   try {
-    console.log('Fetching AWS tools data...')
+    console.log('Fetching Product Hunt tools...')
     
-    const response = await fetch('https://yw5sjxzhx6.execute-api.ap-southeast-2.amazonaws.com/prod/tools', {
-      method: 'GET',
+    const response = await fetch('https://api.producthunt.com/v2/api/graphql', {
+      method: 'POST',
       headers: {
-        'Accept': 'application/json',
+        'Authorization': `Bearer 4KokghZ1bRH-BaL52k8Zf1BUjauROj5DrNpBBLjwVj8`,
+        'Content-Type': 'application/json',
         'User-Agent': 'HappyTools/1.0'
-      }
+      },
+      body: JSON.stringify({
+        query: `
+          query GetPosts($first: Int, $after: String, $topic: String) {
+            posts(first: $first, after: $after, topic: $topic, order: RANKING) {
+              edges {
+                node {
+                  id
+                  name
+                  tagline
+                  description
+                  url
+                  votesCount
+                  featuredAt
+                  createdAt
+                  website
+                  thumbnail {
+                    url
+                  }
+                  maker {
+                    name
+                  }
+                  topics {
+                    edges {
+                      node {
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `,
+        variables: {
+          first: 50,
+          topic: "artificial-intelligence"
+        }
+      })
     })
     
     if (!response.ok) {
-      console.error('Failed to fetch AWS tools:', response.status)
+      console.error('Failed to fetch Product Hunt:', response.status)
       return []
     }
     
-    const awsData = await response.json()
-    console.log(`✅ Fetched ${awsData.length} tools from AWS`)
+    const data = await response.json()
+    console.log(`✅ Fetched ${data.data?.posts?.edges?.length || 0} tools from Product Hunt`)
     
-    // Transform AWS data to match our schema
-    const transformedTools = awsData.map(tool => ({
-      id: tool.tool_id,
-      tool_id: tool.tool_id,
-      name: tool.name || 'Unknown Tool',
-      tagline: tool.tagline || '',
-      description: tool.description || '',
-      url: tool.url || '',
-      category: mapTopicsToCategory(tool.topics || []),
-      topics: tool.topics || [],
-      votes: 0, // AWS doesn't provide votes
-      rating: 0, // AWS doesn't provide rating
-      featured_at: tool.created_at || new Date().toISOString(),
-      created_at: tool.created_at || new Date().toISOString(),
-      source: 'aws-dynamodb',
-      maker: 'Product Hunt', // Default maker
-      website: extractWebsiteFromUrl(tool.url || ''),
-      launch_date: tool.created_at || new Date().toISOString(),
-      is_featured: true,
-      badge: 'New',
-      thumbnail: generateThumbnailUrl(tool.name || 'Tool')
-    }))
+    // Transform Product Hunt data to match our schema
+    const transformedTools = data.data?.posts?.edges?.map(edge => {
+      const post = edge.node
+      return {
+        id: post.id,
+        name: post.name || 'Unknown Tool',
+        tagline: post.tagline || '',
+        description: post.description || post.tagline || '',
+        url: post.url || '',
+        category: mapProductHuntTopicsToCategory(post.topics?.edges || []),
+        topics: post.topics?.edges?.map(topicEdge => topicEdge.node.name) || [],
+        votes: post.votesCount || 0,
+        rating: 0, // Product Hunt doesn't provide ratings
+        featured_at: post.featuredAt || post.createdAt || new Date().toISOString(),
+        created_at: post.createdAt || new Date().toISOString(),
+        source: 'producthunt',
+        maker: post.maker?.name || 'Product Hunt',
+        website: post.website || extractWebsiteFromUrl(post.url || ''),
+        launch_date: post.featuredAt || post.createdAt || new Date().toISOString(),
+        is_featured: true,
+        badge: 'New',
+        thumbnail: post.thumbnail?.url || generateThumbnailUrl(post.name || 'Tool')
+      }
+    }) || []
     
     return transformedTools
     
   } catch (error) {
-    console.error('Error fetching AWS tools:', error)
+    console.error('Error fetching Product Hunt tools:', error)
     return []
   }
 }
 
-// Helper function to map topics to categories
-function mapTopicsToCategory(topics) {
+// Helper function to fetch aitools.fyi data
+async function fetchAitoolsFyiTools() {
+  try {
+    console.log('Scraping aitools.fyi...')
+    
+    const response = await fetch('https://aitools.fyi/', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+      }
+    })
+    
+    if (!response.ok) {
+      console.error('Failed to fetch aitools.fyi:', response.status)
+      return []
+    }
+    
+    const html = await response.text()
+    const $ = cheerio.load(html)
+    const tools = []
+    
+    // Scrape AI tools from aitools.fyi
+    $('.tool-card, .card, .item, [data-tool]').each((index, element) => {
+      if (tools.length >= 30) return false // Limit to 30 tools
+      
+      try {
+        const $elem = $(element)
+        const name = $elem.find('.tool-name, .title, h3, h2').first().text().trim()
+        const tagline = $elem.find('.tool-tagline, .description, .subtitle').first().text().trim()
+        const description = $elem.find('.tool-description, .desc, p').first().text().trim()
+        const url = $elem.find('a').first().attr('href')
+        const category = $elem.find('.category, .tag').first().text().trim()
+        
+        if (name && name.length > 2) {
+          tools.push({
+            id: uuidv4(),
+            name: name,
+            tagline: tagline || '',
+            description: description || tagline || '',
+            url: url ? (url.startsWith('http') ? url : `https://aitools.fyi${url}`) : '',
+            category: category || mapAitoolsTextToCategory(name + ' ' + tagline),
+            topics: [category || 'AI Tools'].filter(Boolean),
+            votes: 0,
+            rating: 0,
+            featured_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            source: 'aitools.fyi',
+            maker: 'aitools.fyi',
+            website: url ? extractWebsiteFromUrl(url) : 'aitools.fyi',
+            launch_date: new Date().toISOString(),
+            is_featured: false,
+            badge: 'AI Tool',
+            thumbnail: generateThumbnailUrl(name)
+          })
+        }
+      } catch (err) {
+        console.error('Error parsing aitools.fyi element:', err)
+      }
+    })
+    
+    // If no tools found with specific selectors, try general approach
+    if (tools.length === 0) {
+      $('h1, h2, h3, h4, .title').each((index, element) => {
+        if (tools.length >= 20) return false
+        
+        try {
+          const $elem = $(element)
+          const name = $elem.text().trim()
+          const parent = $elem.parent()
+          const description = parent.find('p, .description').first().text().trim()
+          
+          if (name && name.length > 2 && name.length < 100) {
+            tools.push({
+              id: uuidv4(),
+              name: name,
+              tagline: description.substring(0, 100) || '',
+              description: description || '',
+              url: 'https://aitools.fyi/',
+              category: mapAitoolsTextToCategory(name + ' ' + description),
+              topics: ['AI Tools'],
+              votes: 0,
+              rating: 0,
+              featured_at: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+              source: 'aitools.fyi',
+              maker: 'aitools.fyi',
+              website: 'aitools.fyi',
+              launch_date: new Date().toISOString(),
+              is_featured: false,
+              badge: 'AI Tool',
+              thumbnail: generateThumbnailUrl(name)
+            })
+          }
+        } catch (err) {
+          console.error('Error parsing aitools.fyi general element:', err)
+        }
+      })
+    }
+    
+    console.log(`✅ Scraped ${tools.length} tools from aitools.fyi`)
+    return tools
+    
+  } catch (error) {
+    console.error('Error scraping aitools.fyi:', error)
+    return []
+  }
+}
+
+// Helper function to map Product Hunt topics to categories
+function mapProductHuntTopicsToCategory(topics) {
   const topicMap = {
-    'Artificial Intelligence': 'AI & Machine Learning',
-    'Design Tools': 'Design',
-    'Marketing': 'Marketing',
-    'Developer Tools': 'Development',
-    'Sales': 'Sales',
-    'SaaS': 'SaaS',
-    'Audio': 'Audio & Music',
-    'No-Code': 'No-Code',
-    'Social Media': 'Social Media',
-    'Bots': 'AI & Machine Learning',
-    'Community': 'Community',
-    'reddit': 'Social Media'
+    'artificial-intelligence': 'AI & Machine Learning',
+    'design-tools': 'Design',
+    'marketing': 'Marketing',
+    'developer-tools': 'Development',
+    'sales': 'Sales',
+    'saas': 'SaaS',
+    'productivity': 'Productivity',
+    'social-media': 'Social Media',
+    'no-code': 'No-Code',
+    'fintech': 'Finance',
+    'health-fitness': 'Health & Fitness',
+    'education': 'Education',
+    'analytics': 'Analytics',
+    'customer-communication': 'Communication',
+    'email': 'Email',
+    'crypto': 'Cryptocurrency',
+    'games': 'Gaming',
+    'travel': 'Travel',
+    'music': 'Music',
+    'video': 'Video'
   }
   
   for (const topic of topics) {
-    if (topicMap[topic]) {
-      return topicMap[topic]
+    const topicName = topic.node?.name?.toLowerCase()
+    if (topicName && topicMap[topicName]) {
+      return topicMap[topicName]
     }
   }
   
   return 'Other'
+}
+
+// Helper function to map aitools.fyi text to categories
+function mapAitoolsTextToCategory(text) {
+  const lowerText = text.toLowerCase()
+  
+  if (lowerText.includes('ai') || lowerText.includes('artificial intelligence') || lowerText.includes('machine learning')) {
+    return 'AI & Machine Learning'
+  } else if (lowerText.includes('design') || lowerText.includes('graphic') || lowerText.includes('ui') || lowerText.includes('ux')) {
+    return 'Design'
+  } else if (lowerText.includes('marketing') || lowerText.includes('seo') || lowerText.includes('ads')) {
+    return 'Marketing'
+  } else if (lowerText.includes('developer') || lowerText.includes('code') || lowerText.includes('api')) {
+    return 'Development'
+  } else if (lowerText.includes('sales') || lowerText.includes('crm')) {
+    return 'Sales'
+  } else if (lowerText.includes('productivity') || lowerText.includes('task') || lowerText.includes('workflow')) {
+    return 'Productivity'
+  } else if (lowerText.includes('social') || lowerText.includes('media')) {
+    return 'Social Media'
+  } else if (lowerText.includes('no-code') || lowerText.includes('nocode')) {
+    return 'No-Code'
+  } else if (lowerText.includes('video') || lowerText.includes('youtube')) {
+    return 'Video'
+  } else if (lowerText.includes('image') || lowerText.includes('photo')) {
+    return 'Image'
+  } else if (lowerText.includes('text') || lowerText.includes('writing')) {
+    return 'Writing'
+  } else if (lowerText.includes('audio') || lowerText.includes('music')) {
+    return 'Audio'
+  } else {
+    return 'AI & Machine Learning'
+  }
 }
 
 // Helper function to extract website from URL
@@ -1603,7 +1794,7 @@ function removeDuplicateTools(tools) {
   const uniqueTools = []
   
   for (const tool of tools) {
-    const key = tool.tool_id || tool.id || tool.name
+    const key = tool.name.toLowerCase().trim()
     if (!seen.has(key)) {
       seen.add(key)
       uniqueTools.push(tool)
