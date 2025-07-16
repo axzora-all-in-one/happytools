@@ -6,12 +6,11 @@ import { getClient } from '@/lib/apollo-client'
 import { GET_AI_TOOLS, SEARCH_AI_TOOLS, isAITool } from '@/lib/producthunt'
 import TargetedAiToolsScraper from '@/lib/scrapers/targeted-aitools-scraper'
 
-// Cricbuzz scraping functions with real-time data
+// Cricbuzz live scores using external API
 async function scrapeCricbuzzLiveMatches() {
   try {
-    console.log('Fetching REAL LIVE cricket data...')
+    console.log('Fetching Cricbuzz live matches from API...')
     
-    let scrapedMatches = []
     
     // Try to scrape from Cricbuzz
     try {
