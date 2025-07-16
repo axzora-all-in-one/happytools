@@ -3808,7 +3808,7 @@ IMPORTANT: Return ONLY the JSON workflow, no explanations or markdown formatting
           updated_at: new Date()
         }
         
-        await db.collection('generated_workflows').insertOne(workflowRecord)
+        await db.collection('generated_workflows').insertOne(workflowRecord);
         
         return handleCORS(NextResponse.json({
           success: true,
@@ -3821,7 +3821,7 @@ IMPORTANT: Return ONLY the JSON workflow, no explanations or markdown formatting
             generated_at: new Date().toISOString(),
             workflow_id: workflowRecord.id
           }
-        }))
+        }));
         
       } catch (error) {
         console.error('Error generating workflow:', error);
